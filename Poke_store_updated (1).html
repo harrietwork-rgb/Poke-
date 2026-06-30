@@ -1,0 +1,1595 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Golden Egg Event</title>
+<style>
+  body { margin:0; font-family:system-ui,sans-serif; background:radial-gradient(circle at top,#ffefc2 0%,#b30000 50%,#3a0000 100%); color:#fff; }
+  #game { max-width:900px; margin:20px auto; padding:20px; background:rgba(0,0,0,0.4); border-radius:20px; box-shadow:0 0 30px rgba(0,0,0,0.7); }
+  h1 { text-align:center; text-shadow:0 0 10px #ffd700; }
+  #top-bar { display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; font-size:14px; }
+  #currency { display:flex; gap:15px; flex-wrap:wrap; }
+  .currency-item { display:flex; align-items:center; gap:5px; }
+  .currency-icon { width:18px; height:18px; border-radius:50%; background:radial-gradient(circle,#fff 0%,#ffd700 40%,#b8860b 100%); box-shadow:0 0 8px rgba(255,215,0,0.8); }
+  #tabs-top { display:flex; gap:10px; flex-wrap:wrap; }
+  .top-button { padding:6px 12px; border-radius:999px; border:none; background:linear-gradient(135deg,#ffd700,#ff8c00); color:#3a0000; font-weight:bold; cursor:pointer; }
+  #egg-section { margin-top:20px; padding:15px; border-radius:15px; background:linear-gradient(180deg,#8b0000,#3a0000); box-shadow:inset 0 0 15px rgba(0,0,0,0.7); }
+  #egg-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; }
+  #egg-title { font-size:20px; font-weight:bold; text-shadow:0 0 8px #ffd700; }
+  #timer { font-size:12px; opacity:0.8; }
+  #preview-bar { display:flex; gap:8px; margin-bottom:10px; }
+  .preview-icon { width:40px; height:40px; border-radius:10px; background:radial-gradient(circle,#fff 0%,#ffd700 40%,#ff4500 100%); box-shadow:0 0 10px rgba(255,215,0,0.9); }
+  #egg-container { display:grid; grid-template-columns:repeat(3,100px); gap:12px; justify-content:center; margin:15px 0; }
+  .egg-wrapper { position:relative; width:100px; height:120px; }
+  .egg { width:100px; height:120px; border-radius:50% 50% 45% 45%; background:radial-gradient(circle at 30% 20%,#fff 0%,#ffd700 30%,#b8860b 70%,#8b4513 100%); box-shadow:0 0 15px rgba(255,215,0,0.9); cursor:pointer; transition:transform 0.15s,box-shadow 0.15s,opacity 0.15s; position:absolute; bottom:0; }
+  .egg:hover { transform:scale(1.05); box-shadow:0 0 20px rgba(255,255,255,0.9); }
+  .egg.cracked { opacity:0.4; box-shadow:0 0 5px rgba(0,0,0,0.7); background:radial-gradient(circle at 30% 20%,#fff 0%,#d3d3d3 30%,#808080 70%,#2f4f4f 100%); }
+  .hammer { position:absolute; top:-10px; left:30px; width:40px; height:40px; transform-origin:bottom right; }
+  .hammer-head { width:24px; height:16px; background:linear-gradient(135deg,#696969,#d3d3d3); border-radius:4px; }
+  .hammer-handle { width:8px; height:26px; margin:0 auto; background:linear-gradient(180deg,#8b4513,#3a1f0b); border-radius:999px; }
+  .hammer-smash { animation:hammerSmash 0.25s ease-out; }
+  @keyframes hammerSmash { 0%{transform:rotate(0deg)} 50%{transform:rotate(-40deg)} 100%{transform:rotate(0deg)} }
+  #egg-actions { display:flex; justify-content:space-between; align-items:center; margin-top:10px; gap:10px; flex-wrap:wrap; }
+  .big-button { padding:10px 20px; border-radius:999px; border:none; background:linear-gradient(135deg,#ffd700,#ff8c00); color:#3a0000; font-weight:bold; cursor:pointer; box-shadow:0 0 15px rgba(255,215,0,0.9); text-transform:uppercase; }
+  .big-button:active { transform:scale(0.97); }
+  #result { margin-top:15px; padding:10px; background:rgba(0,0,0,0.5); border-radius:10px; font-size:14px; max-height:300px; overflow-y:auto; }
+  #hud { margin-top:10px; padding:10px; background:rgba(0,0,0,0.5); border-radius:10px; font-size:13px; }
+  .exp-bar-wrap { background:rgba(255,255,255,0.15); border-radius:999px; height:8px; margin:4px 0; overflow:hidden; }
+  .exp-bar-fill { height:100%; background:linear-gradient(90deg,#ffd700,#ff8c00); border-radius:999px; transition:width 0.3s; }
+  #inventory { margin-top:25px; padding:15px; border-radius:15px; background:linear-gradient(180deg,#4b0000,#1a0000); box-shadow:inset 0 0 15px rgba(0,0,0,0.7); }
+  #tabs { display:flex; gap:10px; margin-bottom:15px; flex-wrap:wrap; }
+  .tab-button { padding:8px 16px; border-radius:999px; border:none; background:linear-gradient(135deg,#ffd700,#ff8c00); color:#3a0000; font-weight:bold; cursor:pointer; box-shadow:0 0 10px rgba(255,215,0,0.8); }
+  .tab-button.active { box-shadow:0 0 18px rgba(255,255,255,0.9); outline:2px solid #fff; }
+  .tab-content { display:none; }
+  .tab-content.active { display:block; }
+  #items.active, #chests.active { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; }
+  .item-card { background:rgba(0,0,0,0.6); border-radius:12px; padding:10px; border:2px solid rgba(255,215,0,0.5); font-size:13px; }
+  .item-header { display:flex; align-items:center; gap:8px; margin-bottom:6px; }
+  .item-icon { width:26px; height:26px; border-radius:8px; background:radial-gradient(circle,#fff 0%,#ffd700 40%,#ff4500 100%); box-shadow:0 0 8px rgba(255,215,0,0.9); flex-shrink:0; }
+  .item-name { font-weight:bold; }
+  .item-footer { display:flex; justify-content:space-between; align-items:center; margin-top:6px; }
+  .use-button { padding:4px 10px; border-radius:999px; border:none; background:linear-gradient(135deg,#ffd700,#ff8c00); color:#3a0000; font-size:11px; font-weight:bold; cursor:pointer; }
+  .sell-button { padding:4px 10px; border-radius:999px; border:none; background:linear-gradient(135deg,#00c8ff,#0055ff); color:#fff; font-size:11px; font-weight:bold; cursor:pointer; }
+
+  /* Pokemon tab */
+  #dex-controls { display:flex; gap:8px; margin-bottom:12px; flex-wrap:wrap; align-items:center; }
+  #dex-search { padding:6px 12px; border-radius:999px; border:none; background:rgba(255,255,255,0.15); color:#fff; font-size:13px; width:180px; }
+  #dex-search::placeholder { color:rgba(255,255,255,0.5); }
+  #dex-filter { padding:6px 10px; border-radius:999px; border:none; background:rgba(255,255,255,0.15); color:#fff; font-size:13px; cursor:pointer; }
+  #dex-filter option { background:#3a0000; }
+  #dex-stats { font-size:12px; opacity:0.7; margin-left:auto; }
+  #pokemon-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(88px,1fr)); gap:8px; }
+  .dex-card { background:rgba(0,0,0,0.5); border-radius:10px; padding:6px; text-align:center; font-size:10px; border:2px solid transparent; cursor:default; position:relative; transition:transform 0.1s; }
+  .dex-card.owned { border-color:rgba(100,255,100,0.5); }
+  .dex-card.dupe { border-color:#ffd700; }
+  .dex-card.missing { opacity:0.35; filter:grayscale(1); }
+  .dex-card img { width:56px; height:56px; image-rendering:auto; }
+  .dex-card .dex-name { margin-top:2px; line-height:1.2; word-break:break-word; }
+  .dex-card .dex-num { font-size:9px; opacity:0.6; }
+  .dex-card .rarity-dot { display:inline-block; width:7px; height:7px; border-radius:50%; margin-right:2px; vertical-align:middle; }
+  .dex-card .dupe-badge { position:absolute; top:3px; right:4px; background:#ffd700; color:#3a0000; border-radius:999px; font-size:9px; font-weight:bold; padding:1px 5px; }
+  .dex-card .sell-btn-sm { margin-top:4px; padding:2px 8px; border-radius:999px; border:none; background:linear-gradient(135deg,#00c8ff,#0055ff); color:#fff; font-size:9px; font-weight:bold; cursor:pointer; display:none; }
+  .dex-card.dupe .sell-btn-sm { display:inline-block; }
+  .rarity-common { background:#aaa; }
+  .rarity-uncommon { background:#4fc3f7; }
+  .rarity-rare { background:#7c4dff; }
+  .rarity-epic { background:#ff6d00; }
+  .rarity-legendary { background:#ffd700; }
+  .rarity-mythic { background:#f06292; }
+  #poke-loading { text-align:center; padding:20px; opacity:0.7; }
+
+#drop-rates{margin:15px 0;padding:12px;border-radius:12px;background:rgba(0,0,0,.45);border:1px solid rgba(255,215,0,.5);}
+#drop-rates summary{cursor:pointer;font-size:16px;color:#ffd700;list-style:none;}#drop-rates[open] summary{margin-bottom:8px;}#drop-rates h3{margin:0 0 10px;text-align:center;color:#ffd700;text-shadow:0 0 8px #ffd700;}
+#drop-rates table{width:100%;border-collapse:collapse;font-size:13px;}
+#drop-rates th,#drop-rates td{padding:8px;text-align:center;border-bottom:1px solid rgba(255,255,255,.15);}
+#drop-rates th{color:#ffd700;background:rgba(255,215,0,.08);}
+#drop-rates tr:hover{background:rgba(255,255,255,.05);}
+
+
+#storeModal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);align-items:center;justify-content:center;z-index:999}
+#storeBox{background:#3a0000;padding:20px;border:2px solid gold;border-radius:16px;max-width:420px;color:#fff}
+.store-item{display:flex;justify-content:space-between;margin:8px 0}
+</style>
+</head>
+<body>
+<div id="game">
+  <h1>🥚 Lucky Golden Egg</h1>
+  <div id="top-bar">
+    <div id="currency">
+      <div class="currency-item"><div class="currency-icon"></div><span id="coins-display">Coins: 0</span></div>
+      <div class="currency-item"><div class="currency-icon"></div><span id="diamonds-display">Diamonds: 0</span></div>
+      <div class="currency-item"><div class="currency-icon"></div><span id="bp-display">BP: 0</span></div>
+      <div class="currency-item"><span id="level-display" style="font-weight:bold;color:#ffd700;">Lv.1</span></div>
+    </div>
+    <div id="tabs-top">
+      <button class="top-button">Lucky Draw</button>
+      <button class="top-button">Super Exchange</button>
+      <button class="top-button">Daily Top-up</button>
+    </div>
+  </div>
+
+  <div id="egg-section">
+    <div id="egg-header">
+      <div id="egg-title">Golden Egg Event</div>
+      <div id="timer">Remaining: 4 D 20 H 39 M</div>
+    </div>
+    <div id="preview-bar">
+      <div class="preview-icon"></div><div class="preview-icon"></div>
+      <div class="preview-icon"></div><div class="preview-icon"></div>
+      <div class="preview-icon"></div>
+    </div>
+    <details id="drop-rates"><summary><strong>🎁 Golden Egg Rewards (Click to Expand)</strong></summary><div style="margin-top:10px;"><table><thead><tr><th>Reward</th><th>Chance</th><th>1 in N Pulls</th></tr></thead><tbody>
+<tr><td>🍬 Candy 1</td><td>35%</td><td>1 in 3</td></tr>
+<tr><td>💎 Diamonds</td><td>25%</td><td>1 in 4</td></tr>
+<tr><td>🍬 Candy 2</td><td>18%</td><td>1 in 6</td></tr>
+<tr><td>🪙 Gold</td><td>10%</td><td>1 in 10</td></tr>
+<tr><td>🍬 Candy 3</td><td>8.50%</td><td>1 in 12</td></tr>
+<tr><td>⚪ Pokémon — Common</td><td>0.10%</td><td>1 in 1,000</td></tr>
+<tr><td>🔵 Pokémon — Uncommon</td><td>0.05%</td><td>1 in 2,000</td></tr>
+<tr><td>🟣 Pokémon — Rare</td><td>0.02%</td><td>1 in 5,000</td></tr>
+<tr><td>🟠 Pokémon — Epic</td><td>0.005%</td><td>1 in 20,000</td></tr>
+<tr><td>🟡 Pokémon — Legendary</td><td>0.002%</td><td>1 in 50,000</td></tr>
+<tr><td>🌈 Pokémon — Mythic</td><td>0.001%</td><td>1 in 100,000</td></tr>
+</tbody></table></div></details>
+    <div id="egg-container"></div>
+    <div id="egg-actions">
+      <button id="use1000" class="big-button">Use x1000</button>
+      <button id="use100" class="big-button" style="background:linear-gradient(135deg,#c0c0c0,#808080);">Use x100</button>
+      <span style="font-size:12px;opacity:0.8;">Tap an egg to use 1 hammer</span>
+    </div>
+    <div id="result"></div>
+    <div id="hud"></div>
+  </div>
+
+  <div id="inventory">
+    <div id="tabs">
+      <button class="tab-button active" data-tab="items">Items</button>
+      <button class="tab-button" data-tab="chests">Chests</button>
+      <button class="tab-button" data-tab="pokemon">Pokédex</button>
+    </div>
+    <div id="items" class="tab-content active"></div>
+    <div id="chests" class="tab-content"></div>
+    <div id="pokemon" class="tab-content">
+      <div id="dex-controls">
+        <input id="dex-search" type="text" placeholder="Search Pokémon…">
+        <select id="dex-filter">
+          <option value="all">All</option>
+          <option value="owned">Owned</option>
+          <option value="missing">Missing</option>
+          <option value="dupes">Duplicates</option>
+          <option value="common">Common</option>
+          <option value="uncommon">Uncommon</option>
+          <option value="rare">Rare</option>
+          <option value="epic">Epic</option>
+          <option value="legendary">Legendary</option>
+          <option value="mythic">Mythic</option>
+        </select>
+        <span id="dex-stats"></span>
+      </div>
+      <div id="pokemon-grid"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// Total: 1025 Pokemon
+const POKEDEX = [
+  {id:1,name:"Bulbasaur",slug:"bulbasaur",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:2,name:"Ivysaur",slug:"ivysaur",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:3,name:"Venusaur",slug:"venusaur",rarity:"epic",weight:5,base:{hp:750,atk:160,def:140}},
+  {id:4,name:"Charmander",slug:"charmander",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:5,name:"Charmeleon",slug:"charmeleon",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:6,name:"Charizard",slug:"charizard",rarity:"epic",weight:5,base:{hp:750,atk:160,def:140}},
+  {id:7,name:"Squirtle",slug:"squirtle",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:8,name:"Wartortle",slug:"wartortle",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:9,name:"Blastoise",slug:"blastoise",rarity:"epic",weight:5,base:{hp:750,atk:160,def:140}},
+  {id:10,name:"Caterpie",slug:"caterpie",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:11,name:"Metapod",slug:"metapod",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:12,name:"Butterfree",slug:"butterfree",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:13,name:"Weedle",slug:"weedle",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:14,name:"Kakuna",slug:"kakuna",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:15,name:"Beedrill",slug:"beedrill",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:16,name:"Pidgey",slug:"pidgey",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:17,name:"Pidgeotto",slug:"pidgeotto",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:18,name:"Pidgeot",slug:"pidgeot",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:19,name:"Rattata",slug:"rattata",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:20,name:"Raticate",slug:"raticate",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:21,name:"Spearow",slug:"spearow",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:22,name:"Fearow",slug:"fearow",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:23,name:"Ekans",slug:"ekans",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:24,name:"Arbok",slug:"arbok",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:25,name:"Pikachu",slug:"pikachu",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:26,name:"Raichu",slug:"raichu",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:27,name:"Sandshrew",slug:"sandshrew",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:28,name:"Sandslash",slug:"sandslash",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:29,name:"Nidoran-f",slug:"nidoran-f",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:30,name:"Nidorina",slug:"nidorina",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:31,name:"Nidoqueen",slug:"nidoqueen",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:32,name:"Nidoran-m",slug:"nidoran-m",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:33,name:"Nidorino",slug:"nidorino",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:34,name:"Nidoking",slug:"nidoking",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:35,name:"Clefairy",slug:"clefairy",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:36,name:"Clefable",slug:"clefable",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:37,name:"Vulpix",slug:"vulpix",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:38,name:"Ninetales",slug:"ninetales",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:39,name:"Jigglypuff",slug:"jigglypuff",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:40,name:"Wigglytuff",slug:"wigglytuff",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:41,name:"Zubat",slug:"zubat",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:42,name:"Golbat",slug:"golbat",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:43,name:"Oddish",slug:"oddish",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:44,name:"Gloom",slug:"gloom",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:45,name:"Vileplume",slug:"vileplume",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:46,name:"Paras",slug:"paras",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:47,name:"Parasect",slug:"parasect",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:48,name:"Venonat",slug:"venonat",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:49,name:"Venomoth",slug:"venomoth",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:50,name:"Diglett",slug:"diglett",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:51,name:"Dugtrio",slug:"dugtrio",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:52,name:"Meowth",slug:"meowth",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:53,name:"Persian",slug:"persian",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:54,name:"Psyduck",slug:"psyduck",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:55,name:"Golduck",slug:"golduck",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:56,name:"Mankey",slug:"mankey",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:57,name:"Primeape",slug:"primeape",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:58,name:"Growlithe",slug:"growlithe",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:59,name:"Arcanine",slug:"arcanine",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:60,name:"Poliwag",slug:"poliwag",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:61,name:"Poliwhirl",slug:"poliwhirl",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:62,name:"Poliwrath",slug:"poliwrath",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:63,name:"Abra",slug:"abra",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:64,name:"Kadabra",slug:"kadabra",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:65,name:"Alakazam",slug:"alakazam",rarity:"epic",weight:5,base:{hp:750,atk:160,def:140}},
+  {id:66,name:"Machop",slug:"machop",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:67,name:"Machoke",slug:"machoke",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:68,name:"Machamp",slug:"machamp",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:69,name:"Bellsprout",slug:"bellsprout",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:70,name:"Weepinbell",slug:"weepinbell",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:71,name:"Victreebel",slug:"victreebel",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:72,name:"Tentacool",slug:"tentacool",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:73,name:"Tentacruel",slug:"tentacruel",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:74,name:"Geodude",slug:"geodude",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:75,name:"Graveler",slug:"graveler",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:76,name:"Golem",slug:"golem",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:77,name:"Ponyta",slug:"ponyta",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:78,name:"Rapidash",slug:"rapidash",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:79,name:"Slowpoke",slug:"slowpoke",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:80,name:"Slowbro",slug:"slowbro",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:81,name:"Magnemite",slug:"magnemite",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:82,name:"Magneton",slug:"magneton",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:83,name:"Farfetchd",slug:"farfetchd",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:84,name:"Doduo",slug:"doduo",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:85,name:"Dodrio",slug:"dodrio",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:86,name:"Seel",slug:"seel",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:87,name:"Dewgong",slug:"dewgong",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:88,name:"Grimer",slug:"grimer",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:89,name:"Muk",slug:"muk",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:90,name:"Shellder",slug:"shellder",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:91,name:"Cloyster",slug:"cloyster",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:92,name:"Gastly",slug:"gastly",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:93,name:"Haunter",slug:"haunter",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:94,name:"Gengar",slug:"gengar",rarity:"epic",weight:5,base:{hp:750,atk:160,def:140}},
+  {id:95,name:"Onix",slug:"onix",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:96,name:"Drowzee",slug:"drowzee",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:97,name:"Hypno",slug:"hypno",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:98,name:"Krabby",slug:"krabby",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:99,name:"Kingler",slug:"kingler",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:100,name:"Voltorb",slug:"voltorb",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:101,name:"Electrode",slug:"electrode",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:102,name:"Exeggcute",slug:"exeggcute",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:103,name:"Exeggutor",slug:"exeggutor",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:104,name:"Cubone",slug:"cubone",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:105,name:"Marowak",slug:"marowak",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:106,name:"Hitmonlee",slug:"hitmonlee",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:107,name:"Hitmonchan",slug:"hitmonchan",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:108,name:"Lickitung",slug:"lickitung",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:109,name:"Koffing",slug:"koffing",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:110,name:"Weezing",slug:"weezing",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:111,name:"Rhyhorn",slug:"rhyhorn",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:112,name:"Rhydon",slug:"rhydon",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:113,name:"Chansey",slug:"chansey",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:114,name:"Tangela",slug:"tangela",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:115,name:"Kangaskhan",slug:"kangaskhan",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:116,name:"Horsea",slug:"horsea",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:117,name:"Seadra",slug:"seadra",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:118,name:"Goldeen",slug:"goldeen",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:119,name:"Seaking",slug:"seaking",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:120,name:"Staryu",slug:"staryu",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:121,name:"Starmie",slug:"starmie",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:122,name:"Mr-mime",slug:"mr-mime",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:123,name:"Scyther",slug:"scyther",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:124,name:"Jynx",slug:"jynx",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:125,name:"Electabuzz",slug:"electabuzz",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:126,name:"Magmar",slug:"magmar",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:127,name:"Pinsir",slug:"pinsir",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:128,name:"Tauros",slug:"tauros",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:129,name:"Magikarp",slug:"magikarp",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:130,name:"Gyarados",slug:"gyarados",rarity:"epic",weight:5,base:{hp:750,atk:160,def:140}},
+  {id:131,name:"Lapras",slug:"lapras",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:132,name:"Ditto",slug:"ditto",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:133,name:"Eevee",slug:"eevee",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:134,name:"Vaporeon",slug:"vaporeon",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:135,name:"Jolteon",slug:"jolteon",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:136,name:"Flareon",slug:"flareon",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:137,name:"Porygon",slug:"porygon",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:138,name:"Omanyte",slug:"omanyte",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:139,name:"Omastar",slug:"omastar",rarity:"epic",weight:5,base:{hp:750,atk:160,def:140}},
+  {id:140,name:"Kabuto",slug:"kabuto",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:141,name:"Kabutops",slug:"kabutops",rarity:"epic",weight:5,base:{hp:750,atk:160,def:140}},
+  {id:142,name:"Aerodactyl",slug:"aerodactyl",rarity:"epic",weight:5,base:{hp:750,atk:160,def:140}},
+  {id:143,name:"Snorlax",slug:"snorlax",rarity:"epic",weight:5,base:{hp:750,atk:160,def:140}},
+  {id:144,name:"Articuno",slug:"articuno",rarity:"legendary",weight:1.5,base:{hp:1000,atk:210,def:180}},
+  {id:145,name:"Zapdos",slug:"zapdos",rarity:"legendary",weight:1.5,base:{hp:1000,atk:210,def:180}},
+  {id:146,name:"Moltres",slug:"moltres",rarity:"legendary",weight:1.5,base:{hp:1000,atk:210,def:180}},
+  {id:147,name:"Dratini",slug:"dratini",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:148,name:"Dragonair",slug:"dragonair",rarity:"epic",weight:5,base:{hp:750,atk:160,def:140}},
+  {id:149,name:"Dragonite",slug:"dragonite",rarity:"mythic",weight:0.3,base:{hp:1400,atk:280,def:240}},
+  {id:150,name:"Mewtwo",slug:"mewtwo",rarity:"mythic",weight:0.3,base:{hp:1400,atk:280,def:240}},
+  {id:151,name:"Mew",slug:"mew",rarity:"mythic",weight:0.3,base:{hp:1400,atk:280,def:240}},
+  {id:152,name:"Chikorita",slug:"chikorita",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:153,name:"Bayleef",slug:"bayleef",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:154,name:"Meganium",slug:"meganium",rarity:"epic",weight:5,base:{hp:750,atk:160,def:140}},
+  {id:155,name:"Cyndaquil",slug:"cyndaquil",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:156,name:"Quilava",slug:"quilava",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:157,name:"Typhlosion",slug:"typhlosion",rarity:"epic",weight:5,base:{hp:750,atk:160,def:140}},
+  {id:158,name:"Totodile",slug:"totodile",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:159,name:"Croconaw",slug:"croconaw",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:160,name:"Feraligatr",slug:"feraligatr",rarity:"epic",weight:5,base:{hp:750,atk:160,def:140}},
+  {id:161,name:"Sentret",slug:"sentret",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:162,name:"Furret",slug:"furret",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:163,name:"Hoothoot",slug:"hoothoot",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:164,name:"Noctowl",slug:"noctowl",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:165,name:"Ledyba",slug:"ledyba",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:166,name:"Ledian",slug:"ledian",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:167,name:"Spinarak",slug:"spinarak",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:168,name:"Ariados",slug:"ariados",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:169,name:"Crobat",slug:"crobat",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:170,name:"Chinchou",slug:"chinchou",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:171,name:"Lanturn",slug:"lanturn",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:172,name:"Pichu",slug:"pichu",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:173,name:"Cleffa",slug:"cleffa",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:174,name:"Igglybuff",slug:"igglybuff",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:175,name:"Togepi",slug:"togepi",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:176,name:"Togetic",slug:"togetic",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:177,name:"Natu",slug:"natu",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:178,name:"Xatu",slug:"xatu",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:179,name:"Mareep",slug:"mareep",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:180,name:"Flaaffy",slug:"flaaffy",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:181,name:"Ampharos",slug:"ampharos",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:182,name:"Bellossom",slug:"bellossom",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:183,name:"Marill",slug:"marill",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:184,name:"Azumarill",slug:"azumarill",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:185,name:"Sudowoodo",slug:"sudowoodo",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:186,name:"Politoed",slug:"politoed",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:187,name:"Hoppip",slug:"hoppip",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:188,name:"Skiploom",slug:"skiploom",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:189,name:"Jumpluff",slug:"jumpluff",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:190,name:"Aipom",slug:"aipom",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:191,name:"Sunkern",slug:"sunkern",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:192,name:"Sunflora",slug:"sunflora",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:193,name:"Yanma",slug:"yanma",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:194,name:"Wooper",slug:"wooper",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:195,name:"Quagsire",slug:"quagsire",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:196,name:"Espeon",slug:"espeon",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:197,name:"Umbreon",slug:"umbreon",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:198,name:"Murkrow",slug:"murkrow",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:199,name:"Slowking",slug:"slowking",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:200,name:"Misdreavus",slug:"misdreavus",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:201,name:"Unown",slug:"unown",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:202,name:"Wobbuffet",slug:"wobbuffet",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:203,name:"Girafarig",slug:"girafarig",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:204,name:"Pineco",slug:"pineco",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:205,name:"Forretress",slug:"forretress",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:206,name:"Dunsparce",slug:"dunsparce",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:207,name:"Gligar",slug:"gligar",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:208,name:"Steelix",slug:"steelix",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:209,name:"Snubbull",slug:"snubbull",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:210,name:"Granbull",slug:"granbull",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:211,name:"Qwilfish",slug:"qwilfish",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:212,name:"Scizor",slug:"scizor",rarity:"epic",weight:5,base:{hp:750,atk:160,def:140}},
+  {id:213,name:"Shuckle",slug:"shuckle",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:214,name:"Heracross",slug:"heracross",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:215,name:"Sneasel",slug:"sneasel",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:216,name:"Teddiursa",slug:"teddiursa",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:217,name:"Ursaring",slug:"ursaring",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:218,name:"Slugma",slug:"slugma",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:219,name:"Magcargo",slug:"magcargo",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:220,name:"Swinub",slug:"swinub",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:221,name:"Piloswine",slug:"piloswine",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:222,name:"Corsola",slug:"corsola",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:223,name:"Remoraid",slug:"remoraid",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:224,name:"Octillery",slug:"octillery",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:225,name:"Delibird",slug:"delibird",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:226,name:"Mantine",slug:"mantine",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:227,name:"Skarmory",slug:"skarmory",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:228,name:"Houndour",slug:"houndour",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:229,name:"Houndoom",slug:"houndoom",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:230,name:"Kingdra",slug:"kingdra",rarity:"epic",weight:5,base:{hp:750,atk:160,def:140}},
+  {id:231,name:"Phanpy",slug:"phanpy",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:232,name:"Donphan",slug:"donphan",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:233,name:"Porygon2",slug:"porygon2",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:234,name:"Stantler",slug:"stantler",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:235,name:"Smeargle",slug:"smeargle",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:236,name:"Tyrogue",slug:"tyrogue",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:237,name:"Hitmontop",slug:"hitmontop",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:238,name:"Smoochum",slug:"smoochum",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:239,name:"Elekid",slug:"elekid",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:240,name:"Magby",slug:"magby",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:241,name:"Miltank",slug:"miltank",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:242,name:"Blissey",slug:"blissey",rarity:"epic",weight:5,base:{hp:750,atk:160,def:140}},
+  {id:243,name:"Raikou",slug:"raikou",rarity:"legendary",weight:1.5,base:{hp:1000,atk:210,def:180}},
+  {id:244,name:"Entei",slug:"entei",rarity:"legendary",weight:1.5,base:{hp:1000,atk:210,def:180}},
+  {id:245,name:"Suicune",slug:"suicune",rarity:"legendary",weight:1.5,base:{hp:1000,atk:210,def:180}},
+  {id:246,name:"Larvitar",slug:"larvitar",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:247,name:"Pupitar",slug:"pupitar",rarity:"epic",weight:5,base:{hp:750,atk:160,def:140}},
+  {id:248,name:"Tyranitar",slug:"tyranitar",rarity:"mythic",weight:0.3,base:{hp:1400,atk:280,def:240}},
+  {id:249,name:"Lugia",slug:"lugia",rarity:"mythic",weight:0.3,base:{hp:1400,atk:280,def:240}},
+  {id:250,name:"Ho-oh",slug:"ho-oh",rarity:"mythic",weight:0.3,base:{hp:1400,atk:280,def:240}},
+  {id:251,name:"Celebi",slug:"celebi",rarity:"mythic",weight:0.3,base:{hp:1400,atk:280,def:240}},
+  {id:252,name:"Treecko",slug:"treecko",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:253,name:"Grovyle",slug:"grovyle",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:254,name:"Sceptile",slug:"sceptile",rarity:"epic",weight:5,base:{hp:750,atk:160,def:140}},
+  {id:255,name:"Torchic",slug:"torchic",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:256,name:"Combusken",slug:"combusken",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:257,name:"Blaziken",slug:"blaziken",rarity:"epic",weight:5,base:{hp:750,atk:160,def:140}},
+  {id:258,name:"Mudkip",slug:"mudkip",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:259,name:"Marshtomp",slug:"marshtomp",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:260,name:"Swampert",slug:"swampert",rarity:"epic",weight:5,base:{hp:750,atk:160,def:140}},
+  {id:261,name:"Poochyena",slug:"poochyena",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:262,name:"Mightyena",slug:"mightyena",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:263,name:"Zigzagoon",slug:"zigzagoon",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:264,name:"Linoone",slug:"linoone",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:265,name:"Wurmple",slug:"wurmple",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:266,name:"Silcoon",slug:"silcoon",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:267,name:"Beautifly",slug:"beautifly",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:268,name:"Cascoon",slug:"cascoon",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:269,name:"Dustox",slug:"dustox",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:270,name:"Lotad",slug:"lotad",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:271,name:"Lombre",slug:"lombre",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:272,name:"Ludicolo",slug:"ludicolo",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:273,name:"Seedot",slug:"seedot",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:274,name:"Nuzleaf",slug:"nuzleaf",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:275,name:"Shiftry",slug:"shiftry",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:276,name:"Taillow",slug:"taillow",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:277,name:"Swellow",slug:"swellow",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:278,name:"Wingull",slug:"wingull",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:279,name:"Pelipper",slug:"pelipper",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:280,name:"Ralts",slug:"ralts",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:281,name:"Kirlia",slug:"kirlia",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:282,name:"Gardevoir",slug:"gardevoir",rarity:"epic",weight:5,base:{hp:750,atk:160,def:140}},
+  {id:283,name:"Surskit",slug:"surskit",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:284,name:"Masquerain",slug:"masquerain",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:285,name:"Shroomish",slug:"shroomish",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:286,name:"Breloom",slug:"breloom",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:287,name:"Slakoth",slug:"slakoth",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:288,name:"Vigoroth",slug:"vigoroth",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:289,name:"Slaking",slug:"slaking",rarity:"epic",weight:5,base:{hp:750,atk:160,def:140}},
+  {id:290,name:"Nincada",slug:"nincada",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:291,name:"Ninjask",slug:"ninjask",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:292,name:"Shedinja",slug:"shedinja",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:293,name:"Whismur",slug:"whismur",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:294,name:"Loudred",slug:"loudred",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:295,name:"Exploud",slug:"exploud",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:296,name:"Makuhita",slug:"makuhita",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:297,name:"Hariyama",slug:"hariyama",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:298,name:"Azurill",slug:"azurill",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:299,name:"Nosepass",slug:"nosepass",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:300,name:"Skitty",slug:"skitty",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:301,name:"Delcatty",slug:"delcatty",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:302,name:"Sableye",slug:"sableye",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:303,name:"Mawile",slug:"mawile",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:304,name:"Aron",slug:"aron",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:305,name:"Lairon",slug:"lairon",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:306,name:"Aggron",slug:"aggron",rarity:"epic",weight:5,base:{hp:750,atk:160,def:140}},
+  {id:307,name:"Meditite",slug:"meditite",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:308,name:"Medicham",slug:"medicham",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:309,name:"Electrike",slug:"electrike",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:310,name:"Manectric",slug:"manectric",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:311,name:"Plusle",slug:"plusle",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:312,name:"Minun",slug:"minun",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:313,name:"Volbeat",slug:"volbeat",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:314,name:"Illumise",slug:"illumise",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:315,name:"Roselia",slug:"roselia",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:316,name:"Gulpin",slug:"gulpin",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:317,name:"Swalot",slug:"swalot",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:318,name:"Carvanha",slug:"carvanha",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:319,name:"Sharpedo",slug:"sharpedo",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:320,name:"Wailmer",slug:"wailmer",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:321,name:"Wailord",slug:"wailord",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:322,name:"Numel",slug:"numel",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:323,name:"Camerupt",slug:"camerupt",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:324,name:"Torkoal",slug:"torkoal",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:325,name:"Spoink",slug:"spoink",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:326,name:"Grumpig",slug:"grumpig",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:327,name:"Spinda",slug:"spinda",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:328,name:"Trapinch",slug:"trapinch",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:329,name:"Vibrava",slug:"vibrava",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:330,name:"Flygon",slug:"flygon",rarity:"epic",weight:5,base:{hp:750,atk:160,def:140}},
+  {id:331,name:"Cacnea",slug:"cacnea",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:332,name:"Cacturne",slug:"cacturne",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:333,name:"Swablu",slug:"swablu",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:334,name:"Altaria",slug:"altaria",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:335,name:"Zangoose",slug:"zangoose",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:336,name:"Seviper",slug:"seviper",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:337,name:"Lunatone",slug:"lunatone",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:338,name:"Solrock",slug:"solrock",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:339,name:"Barboach",slug:"barboach",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:340,name:"Whiscash",slug:"whiscash",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:341,name:"Corphish",slug:"corphish",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:342,name:"Crawdaunt",slug:"crawdaunt",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:343,name:"Baltoy",slug:"baltoy",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:344,name:"Claydol",slug:"claydol",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:345,name:"Lileep",slug:"lileep",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:346,name:"Cradily",slug:"cradily",rarity:"epic",weight:5,base:{hp:750,atk:160,def:140}},
+  {id:347,name:"Anorith",slug:"anorith",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:348,name:"Armaldo",slug:"armaldo",rarity:"epic",weight:5,base:{hp:750,atk:160,def:140}},
+  {id:349,name:"Feebas",slug:"feebas",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:350,name:"Milotic",slug:"milotic",rarity:"mythic",weight:0.3,base:{hp:1400,atk:280,def:240}},
+  {id:351,name:"Castform",slug:"castform",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:352,name:"Kecleon",slug:"kecleon",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:353,name:"Shuppet",slug:"shuppet",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:354,name:"Banette",slug:"banette",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:355,name:"Duskull",slug:"duskull",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:356,name:"Dusclops",slug:"dusclops",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:357,name:"Tropius",slug:"tropius",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:358,name:"Chimecho",slug:"chimecho",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:359,name:"Absol",slug:"absol",rarity:"epic",weight:5,base:{hp:750,atk:160,def:140}},
+  {id:360,name:"Wynaut",slug:"wynaut",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:361,name:"Snorunt",slug:"snorunt",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:362,name:"Glalie",slug:"glalie",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:363,name:"Spheal",slug:"spheal",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:364,name:"Sealeo",slug:"sealeo",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:365,name:"Walrein",slug:"walrein",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:366,name:"Clamperl",slug:"clamperl",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:367,name:"Huntail",slug:"huntail",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:368,name:"Gorebyss",slug:"gorebyss",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:369,name:"Relicanth",slug:"relicanth",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:370,name:"Luvdisc",slug:"luvdisc",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:371,name:"Bagon",slug:"bagon",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:372,name:"Shelgon",slug:"shelgon",rarity:"epic",weight:5,base:{hp:750,atk:160,def:140}},
+  {id:373,name:"Salamence",slug:"salamence",rarity:"mythic",weight:0.3,base:{hp:1400,atk:280,def:240}},
+  {id:374,name:"Beldum",slug:"beldum",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:375,name:"Metang",slug:"metang",rarity:"epic",weight:5,base:{hp:750,atk:160,def:140}},
+  {id:376,name:"Metagross",slug:"metagross",rarity:"mythic",weight:0.3,base:{hp:1400,atk:280,def:240}},
+  {id:377,name:"Regirock",slug:"regirock",rarity:"legendary",weight:1.5,base:{hp:1000,atk:210,def:180}},
+  {id:378,name:"Regice",slug:"regice",rarity:"legendary",weight:1.5,base:{hp:1000,atk:210,def:180}},
+  {id:379,name:"Registeel",slug:"registeel",rarity:"legendary",weight:1.5,base:{hp:1000,atk:210,def:180}},
+  {id:380,name:"Latias",slug:"latias",rarity:"legendary",weight:1.5,base:{hp:1000,atk:210,def:180}},
+  {id:381,name:"Latios",slug:"latios",rarity:"legendary",weight:1.5,base:{hp:1000,atk:210,def:180}},
+  {id:382,name:"Kyogre",slug:"kyogre",rarity:"mythic",weight:0.3,base:{hp:1400,atk:280,def:240}},
+  {id:383,name:"Groudon",slug:"groudon",rarity:"mythic",weight:0.3,base:{hp:1400,atk:280,def:240}},
+  {id:384,name:"Rayquaza",slug:"rayquaza",rarity:"mythic",weight:0.3,base:{hp:1400,atk:280,def:240}},
+  {id:385,name:"Jirachi",slug:"jirachi",rarity:"mythic",weight:0.3,base:{hp:1400,atk:280,def:240}},
+  {id:386,name:"Deoxys",slug:"deoxys",rarity:"mythic",weight:0.3,base:{hp:1400,atk:280,def:240}},
+  {id:387,name:"Turtwig",slug:"turtwig",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:388,name:"Grotle",slug:"grotle",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:389,name:"Torterra",slug:"torterra",rarity:"epic",weight:5,base:{hp:750,atk:160,def:140}},
+  {id:390,name:"Chimchar",slug:"chimchar",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:391,name:"Monferno",slug:"monferno",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:392,name:"Infernape",slug:"infernape",rarity:"epic",weight:5,base:{hp:750,atk:160,def:140}},
+  {id:393,name:"Piplup",slug:"piplup",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:394,name:"Prinplup",slug:"prinplup",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:395,name:"Empoleon",slug:"empoleon",rarity:"epic",weight:5,base:{hp:750,atk:160,def:140}},
+  {id:396,name:"Starly",slug:"starly",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:397,name:"Staravia",slug:"staravia",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:398,name:"Staraptor",slug:"staraptor",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:399,name:"Bidoof",slug:"bidoof",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:400,name:"Bibarel",slug:"bibarel",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:401,name:"Kricketot",slug:"kricketot",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:402,name:"Kricketune",slug:"kricketune",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:403,name:"Shinx",slug:"shinx",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:404,name:"Luxio",slug:"luxio",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:405,name:"Luxray",slug:"luxray",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:406,name:"Budew",slug:"budew",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:407,name:"Roserade",slug:"roserade",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:408,name:"Cranidos",slug:"cranidos",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:409,name:"Rampardos",slug:"rampardos",rarity:"epic",weight:5,base:{hp:750,atk:160,def:140}},
+  {id:410,name:"Shieldon",slug:"shieldon",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:411,name:"Bastiodon",slug:"bastiodon",rarity:"epic",weight:5,base:{hp:750,atk:160,def:140}},
+  {id:412,name:"Burmy",slug:"burmy",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:413,name:"Wormadam",slug:"wormadam",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:414,name:"Mothim",slug:"mothim",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:415,name:"Combee",slug:"combee",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:416,name:"Vespiquen",slug:"vespiquen",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:417,name:"Pachirisu",slug:"pachirisu",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:418,name:"Buizel",slug:"buizel",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:419,name:"Floatzel",slug:"floatzel",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:420,name:"Cherubi",slug:"cherubi",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:421,name:"Cherrim",slug:"cherrim",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:422,name:"Shellos",slug:"shellos",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:423,name:"Gastrodon",slug:"gastrodon",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:424,name:"Ambipom",slug:"ambipom",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:425,name:"Drifloon",slug:"drifloon",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:426,name:"Drifblim",slug:"drifblim",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:427,name:"Buneary",slug:"buneary",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:428,name:"Lopunny",slug:"lopunny",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:429,name:"Mismagius",slug:"mismagius",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:430,name:"Honchkrow",slug:"honchkrow",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:431,name:"Glameow",slug:"glameow",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:432,name:"Purugly",slug:"purugly",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:433,name:"Chingling",slug:"chingling",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:434,name:"Stunky",slug:"stunky",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:435,name:"Skuntank",slug:"skuntank",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:436,name:"Bronzor",slug:"bronzor",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:437,name:"Bronzong",slug:"bronzong",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:438,name:"Bonsly",slug:"bonsly",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:439,name:"Mime-jr",slug:"mime-jr",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:440,name:"Happiny",slug:"happiny",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:441,name:"Chatot",slug:"chatot",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:442,name:"Spiritomb",slug:"spiritomb",rarity:"epic",weight:5,base:{hp:750,atk:160,def:140}},
+  {id:443,name:"Gible",slug:"gible",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:444,name:"Gabite",slug:"gabite",rarity:"epic",weight:5,base:{hp:750,atk:160,def:140}},
+  {id:445,name:"Garchomp",slug:"garchomp",rarity:"mythic",weight:0.3,base:{hp:1400,atk:280,def:240}},
+  {id:446,name:"Munchlax",slug:"munchlax",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:447,name:"Riolu",slug:"riolu",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:448,name:"Lucario",slug:"lucario",rarity:"epic",weight:5,base:{hp:750,atk:160,def:140}},
+  {id:449,name:"Hippopotas",slug:"hippopotas",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:450,name:"Hippowdon",slug:"hippowdon",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:451,name:"Skorupi",slug:"skorupi",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:452,name:"Drapion",slug:"drapion",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:453,name:"Croagunk",slug:"croagunk",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:454,name:"Toxicroak",slug:"toxicroak",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:455,name:"Carnivine",slug:"carnivine",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:456,name:"Finneon",slug:"finneon",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:457,name:"Lumineon",slug:"lumineon",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:458,name:"Mantyke",slug:"mantyke",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:459,name:"Snover",slug:"snover",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:460,name:"Abomasnow",slug:"abomasnow",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:461,name:"Weavile",slug:"weavile",rarity:"epic",weight:5,base:{hp:750,atk:160,def:140}},
+  {id:462,name:"Magnezone",slug:"magnezone",rarity:"epic",weight:5,base:{hp:750,atk:160,def:140}},
+  {id:463,name:"Lickilicky",slug:"lickilicky",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:464,name:"Rhyperior",slug:"rhyperior",rarity:"epic",weight:5,base:{hp:750,atk:160,def:140}},
+  {id:465,name:"Tangrowth",slug:"tangrowth",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:466,name:"Electivire",slug:"electivire",rarity:"epic",weight:5,base:{hp:750,atk:160,def:140}},
+  {id:467,name:"Magmortar",slug:"magmortar",rarity:"epic",weight:5,base:{hp:750,atk:160,def:140}},
+  {id:468,name:"Togekiss",slug:"togekiss",rarity:"epic",weight:5,base:{hp:750,atk:160,def:140}},
+  {id:469,name:"Yanmega",slug:"yanmega",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:470,name:"Leafeon",slug:"leafeon",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:471,name:"Glaceon",slug:"glaceon",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:472,name:"Gliscor",slug:"gliscor",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:473,name:"Mamoswine",slug:"mamoswine",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:474,name:"Porygon-z",slug:"porygon-z",rarity:"epic",weight:5,base:{hp:750,atk:160,def:140}},
+  {id:475,name:"Gallade",slug:"gallade",rarity:"epic",weight:5,base:{hp:750,atk:160,def:140}},
+  {id:476,name:"Probopass",slug:"probopass",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:477,name:"Dusknoir",slug:"dusknoir",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:478,name:"Froslass",slug:"froslass",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:479,name:"Rotom",slug:"rotom",rarity:"epic",weight:5,base:{hp:750,atk:160,def:140}},
+  {id:480,name:"Uxie",slug:"uxie",rarity:"legendary",weight:1.5,base:{hp:1000,atk:210,def:180}},
+  {id:481,name:"Mesprit",slug:"mesprit",rarity:"legendary",weight:1.5,base:{hp:1000,atk:210,def:180}},
+  {id:482,name:"Azelf",slug:"azelf",rarity:"legendary",weight:1.5,base:{hp:1000,atk:210,def:180}},
+  {id:483,name:"Dialga",slug:"dialga",rarity:"mythic",weight:0.3,base:{hp:1400,atk:280,def:240}},
+  {id:484,name:"Palkia",slug:"palkia",rarity:"mythic",weight:0.3,base:{hp:1400,atk:280,def:240}},
+  {id:485,name:"Heatran",slug:"heatran",rarity:"legendary",weight:1.5,base:{hp:1000,atk:210,def:180}},
+  {id:486,name:"Regigigas",slug:"regigigas",rarity:"legendary",weight:1.5,base:{hp:1000,atk:210,def:180}},
+  {id:487,name:"Giratina",slug:"giratina",rarity:"mythic",weight:0.3,base:{hp:1400,atk:280,def:240}},
+  {id:488,name:"Cresselia",slug:"cresselia",rarity:"legendary",weight:1.5,base:{hp:1000,atk:210,def:180}},
+  {id:489,name:"Phione",slug:"phione",rarity:"legendary",weight:1.5,base:{hp:1000,atk:210,def:180}},
+  {id:490,name:"Manaphy",slug:"manaphy",rarity:"mythic",weight:0.3,base:{hp:1400,atk:280,def:240}},
+  {id:491,name:"Darkrai",slug:"darkrai",rarity:"mythic",weight:0.3,base:{hp:1400,atk:280,def:240}},
+  {id:492,name:"Shaymin",slug:"shaymin",rarity:"mythic",weight:0.3,base:{hp:1400,atk:280,def:240}},
+  {id:493,name:"Arceus",slug:"arceus",rarity:"mythic",weight:0.3,base:{hp:1400,atk:280,def:240}},
+  {id:494,name:"Victini",slug:"victini",rarity:"mythic",weight:0.3,base:{hp:1400,atk:280,def:240}},
+  {id:495,name:"Snivy",slug:"snivy",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:496,name:"Servine",slug:"servine",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:497,name:"Serperior",slug:"serperior",rarity:"epic",weight:5,base:{hp:750,atk:160,def:140}},
+  {id:498,name:"Tepig",slug:"tepig",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:499,name:"Pignite",slug:"pignite",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:500,name:"Emboar",slug:"emboar",rarity:"epic",weight:5,base:{hp:750,atk:160,def:140}},
+  {id:501,name:"Oshawott",slug:"oshawott",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:502,name:"Dewott",slug:"dewott",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:503,name:"Samurott",slug:"samurott",rarity:"epic",weight:5,base:{hp:750,atk:160,def:140}},
+  {id:504,name:"Patrat",slug:"patrat",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:505,name:"Watchog",slug:"watchog",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:506,name:"Lillipup",slug:"lillipup",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:507,name:"Herdier",slug:"herdier",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:508,name:"Stoutland",slug:"stoutland",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:509,name:"Purrloin",slug:"purrloin",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:510,name:"Liepard",slug:"liepard",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:511,name:"Pansage",slug:"pansage",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:512,name:"Simisage",slug:"simisage",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:513,name:"Pansear",slug:"pansear",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:514,name:"Simisear",slug:"simisear",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:515,name:"Panpour",slug:"panpour",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:516,name:"Simipour",slug:"simipour",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:517,name:"Munna",slug:"munna",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:518,name:"Musharna",slug:"musharna",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:519,name:"Pidove",slug:"pidove",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:520,name:"Tranquill",slug:"tranquill",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:521,name:"Unfezant",slug:"unfezant",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:522,name:"Blitzle",slug:"blitzle",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:523,name:"Zebstrika",slug:"zebstrika",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:524,name:"Roggenrola",slug:"roggenrola",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:525,name:"Boldore",slug:"boldore",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:526,name:"Gigalith",slug:"gigalith",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:527,name:"Woobat",slug:"woobat",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:528,name:"Swoobat",slug:"swoobat",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:529,name:"Drilbur",slug:"drilbur",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:530,name:"Excadrill",slug:"excadrill",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:531,name:"Audino",slug:"audino",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:532,name:"Timburr",slug:"timburr",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:533,name:"Gurdurr",slug:"gurdurr",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:534,name:"Conkeldurr",slug:"conkeldurr",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:535,name:"Tympole",slug:"tympole",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:536,name:"Palpitoad",slug:"palpitoad",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:537,name:"Seismitoad",slug:"seismitoad",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:538,name:"Throh",slug:"throh",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:539,name:"Sawk",slug:"sawk",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:540,name:"Sewaddle",slug:"sewaddle",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:541,name:"Swadloon",slug:"swadloon",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:542,name:"Leavanny",slug:"leavanny",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:543,name:"Venipede",slug:"venipede",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:544,name:"Whirlipede",slug:"whirlipede",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:545,name:"Scolipede",slug:"scolipede",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:546,name:"Cottonee",slug:"cottonee",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:547,name:"Whimsicott",slug:"whimsicott",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:548,name:"Petilil",slug:"petilil",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:549,name:"Lilligant",slug:"lilligant",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:550,name:"Basculin",slug:"basculin",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:551,name:"Sandile",slug:"sandile",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:552,name:"Krokorok",slug:"krokorok",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:553,name:"Krookodile",slug:"krookodile",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:554,name:"Darumaka",slug:"darumaka",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:555,name:"Darmanitan",slug:"darmanitan",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:556,name:"Maractus",slug:"maractus",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:557,name:"Dwebble",slug:"dwebble",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:558,name:"Crustle",slug:"crustle",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:559,name:"Scraggy",slug:"scraggy",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:560,name:"Scrafty",slug:"scrafty",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:561,name:"Sigilyph",slug:"sigilyph",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:562,name:"Yamask",slug:"yamask",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:563,name:"Cofagrigus",slug:"cofagrigus",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:564,name:"Tirtouga",slug:"tirtouga",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:565,name:"Carracosta",slug:"carracosta",rarity:"epic",weight:5,base:{hp:750,atk:160,def:140}},
+  {id:566,name:"Archen",slug:"archen",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:567,name:"Archeops",slug:"archeops",rarity:"epic",weight:5,base:{hp:750,atk:160,def:140}},
+  {id:568,name:"Trubbish",slug:"trubbish",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:569,name:"Garbodor",slug:"garbodor",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:570,name:"Zorua",slug:"zorua",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:571,name:"Zoroark",slug:"zoroark",rarity:"epic",weight:5,base:{hp:750,atk:160,def:140}},
+  {id:572,name:"Minccino",slug:"minccino",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:573,name:"Cinccino",slug:"cinccino",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:574,name:"Gothita",slug:"gothita",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:575,name:"Gothorita",slug:"gothorita",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:576,name:"Gothitelle",slug:"gothitelle",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:577,name:"Solosis",slug:"solosis",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:578,name:"Duosion",slug:"duosion",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:579,name:"Reuniclus",slug:"reuniclus",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:580,name:"Ducklett",slug:"ducklett",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:581,name:"Swanna",slug:"swanna",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:582,name:"Vanillite",slug:"vanillite",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:583,name:"Vanillish",slug:"vanillish",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:584,name:"Vanilluxe",slug:"vanilluxe",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:585,name:"Deerling",slug:"deerling",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:586,name:"Sawsbuck",slug:"sawsbuck",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:587,name:"Emolga",slug:"emolga",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:588,name:"Karrablast",slug:"karrablast",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:589,name:"Escavalier",slug:"escavalier",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:590,name:"Foongus",slug:"foongus",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:591,name:"Amoonguss",slug:"amoonguss",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:592,name:"Frillish",slug:"frillish",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:593,name:"Jellicent",slug:"jellicent",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:594,name:"Alomomola",slug:"alomomola",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:595,name:"Joltik",slug:"joltik",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:596,name:"Galvantula",slug:"galvantula",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:597,name:"Ferroseed",slug:"ferroseed",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:598,name:"Ferrothorn",slug:"ferrothorn",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:599,name:"Klink",slug:"klink",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:600,name:"Klang",slug:"klang",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:601,name:"Klinklang",slug:"klinklang",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:602,name:"Tynamo",slug:"tynamo",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:603,name:"Eelektrik",slug:"eelektrik",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:604,name:"Eelektross",slug:"eelektross",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:605,name:"Elgyem",slug:"elgyem",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:606,name:"Beheeyem",slug:"beheeyem",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:607,name:"Litwick",slug:"litwick",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:608,name:"Lampent",slug:"lampent",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:609,name:"Chandelure",slug:"chandelure",rarity:"epic",weight:5,base:{hp:750,atk:160,def:140}},
+  {id:610,name:"Axew",slug:"axew",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:611,name:"Fraxure",slug:"fraxure",rarity:"epic",weight:5,base:{hp:750,atk:160,def:140}},
+  {id:612,name:"Haxorus",slug:"haxorus",rarity:"mythic",weight:0.3,base:{hp:1400,atk:280,def:240}},
+  {id:613,name:"Cubchoo",slug:"cubchoo",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:614,name:"Beartic",slug:"beartic",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:615,name:"Cryogonal",slug:"cryogonal",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:616,name:"Shelmet",slug:"shelmet",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:617,name:"Accelgor",slug:"accelgor",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:618,name:"Stunfisk",slug:"stunfisk",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:619,name:"Mienfoo",slug:"mienfoo",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:620,name:"Mienshao",slug:"mienshao",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:621,name:"Druddigon",slug:"druddigon",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:622,name:"Golett",slug:"golett",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:623,name:"Golurk",slug:"golurk",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:624,name:"Pawniard",slug:"pawniard",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:625,name:"Bisharp",slug:"bisharp",rarity:"epic",weight:5,base:{hp:750,atk:160,def:140}},
+  {id:626,name:"Bouffalant",slug:"bouffalant",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:627,name:"Rufflet",slug:"rufflet",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:628,name:"Braviary",slug:"braviary",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:629,name:"Vullaby",slug:"vullaby",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:630,name:"Mandibuzz",slug:"mandibuzz",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:631,name:"Heatmor",slug:"heatmor",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:632,name:"Durant",slug:"durant",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:633,name:"Deino",slug:"deino",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:634,name:"Zweilous",slug:"zweilous",rarity:"epic",weight:5,base:{hp:750,atk:160,def:140}},
+  {id:635,name:"Hydreigon",slug:"hydreigon",rarity:"mythic",weight:0.3,base:{hp:1400,atk:280,def:240}},
+  {id:636,name:"Larvesta",slug:"larvesta",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:637,name:"Volcarona",slug:"volcarona",rarity:"mythic",weight:0.3,base:{hp:1400,atk:280,def:240}},
+  {id:638,name:"Cobalion",slug:"cobalion",rarity:"legendary",weight:1.5,base:{hp:1000,atk:210,def:180}},
+  {id:639,name:"Terrakion",slug:"terrakion",rarity:"legendary",weight:1.5,base:{hp:1000,atk:210,def:180}},
+  {id:640,name:"Virizion",slug:"virizion",rarity:"legendary",weight:1.5,base:{hp:1000,atk:210,def:180}},
+  {id:641,name:"Tornadus",slug:"tornadus",rarity:"legendary",weight:1.5,base:{hp:1000,atk:210,def:180}},
+  {id:642,name:"Thundurus",slug:"thundurus",rarity:"legendary",weight:1.5,base:{hp:1000,atk:210,def:180}},
+  {id:643,name:"Reshiram",slug:"reshiram",rarity:"mythic",weight:0.3,base:{hp:1400,atk:280,def:240}},
+  {id:644,name:"Zekrom",slug:"zekrom",rarity:"mythic",weight:0.3,base:{hp:1400,atk:280,def:240}},
+  {id:645,name:"Landorus",slug:"landorus",rarity:"legendary",weight:1.5,base:{hp:1000,atk:210,def:180}},
+  {id:646,name:"Kyurem",slug:"kyurem",rarity:"mythic",weight:0.3,base:{hp:1400,atk:280,def:240}},
+  {id:647,name:"Keldeo",slug:"keldeo",rarity:"mythic",weight:0.3,base:{hp:1400,atk:280,def:240}},
+  {id:648,name:"Meloetta",slug:"meloetta",rarity:"mythic",weight:0.3,base:{hp:1400,atk:280,def:240}},
+  {id:649,name:"Genesect",slug:"genesect",rarity:"mythic",weight:0.3,base:{hp:1400,atk:280,def:240}},
+  {id:650,name:"Chespin",slug:"chespin",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:651,name:"Quilladin",slug:"quilladin",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:652,name:"Chesnaught",slug:"chesnaught",rarity:"epic",weight:5,base:{hp:750,atk:160,def:140}},
+  {id:653,name:"Fennekin",slug:"fennekin",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:654,name:"Braixen",slug:"braixen",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:655,name:"Delphox",slug:"delphox",rarity:"epic",weight:5,base:{hp:750,atk:160,def:140}},
+  {id:656,name:"Froakie",slug:"froakie",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:657,name:"Frogadier",slug:"frogadier",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:658,name:"Greninja",slug:"greninja",rarity:"epic",weight:5,base:{hp:750,atk:160,def:140}},
+  {id:659,name:"Bunnelby",slug:"bunnelby",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:660,name:"Diggersby",slug:"diggersby",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:661,name:"Fletchling",slug:"fletchling",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:662,name:"Fletchinder",slug:"fletchinder",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:663,name:"Talonflame",slug:"talonflame",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:664,name:"Scatterbug",slug:"scatterbug",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:665,name:"Spewpa",slug:"spewpa",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:666,name:"Vivillon",slug:"vivillon",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:667,name:"Litleo",slug:"litleo",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:668,name:"Pyroar",slug:"pyroar",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:669,name:"Flabebe",slug:"flabebe",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:670,name:"Floette",slug:"floette",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:671,name:"Florges",slug:"florges",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:672,name:"Skiddo",slug:"skiddo",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:673,name:"Gogoat",slug:"gogoat",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:674,name:"Pancham",slug:"pancham",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:675,name:"Pangoro",slug:"pangoro",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:676,name:"Furfrou",slug:"furfrou",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:677,name:"Espurr",slug:"espurr",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:678,name:"Meowstic",slug:"meowstic",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:679,name:"Honedge",slug:"honedge",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:680,name:"Doublade",slug:"doublade",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:681,name:"Aegislash",slug:"aegislash",rarity:"epic",weight:5,base:{hp:750,atk:160,def:140}},
+  {id:682,name:"Spritzee",slug:"spritzee",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:683,name:"Aromatisse",slug:"aromatisse",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:684,name:"Swirlix",slug:"swirlix",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:685,name:"Slurpuff",slug:"slurpuff",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:686,name:"Inkay",slug:"inkay",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:687,name:"Malamar",slug:"malamar",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:688,name:"Binacle",slug:"binacle",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:689,name:"Barbaracle",slug:"barbaracle",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:690,name:"Skrelp",slug:"skrelp",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:691,name:"Dragalge",slug:"dragalge",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:692,name:"Clauncher",slug:"clauncher",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:693,name:"Clawitzer",slug:"clawitzer",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:694,name:"Helioptile",slug:"helioptile",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:695,name:"Heliolisk",slug:"heliolisk",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:696,name:"Tyrunt",slug:"tyrunt",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:697,name:"Tyrantrum",slug:"tyrantrum",rarity:"epic",weight:5,base:{hp:750,atk:160,def:140}},
+  {id:698,name:"Amaura",slug:"amaura",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:699,name:"Aurorus",slug:"aurorus",rarity:"epic",weight:5,base:{hp:750,atk:160,def:140}},
+  {id:700,name:"Sylveon",slug:"sylveon",rarity:"epic",weight:5,base:{hp:750,atk:160,def:140}},
+  {id:701,name:"Hawlucha",slug:"hawlucha",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:702,name:"Dedenne",slug:"dedenne",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:703,name:"Carbink",slug:"carbink",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:704,name:"Goomy",slug:"goomy",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:705,name:"Sliggoo",slug:"sliggoo",rarity:"epic",weight:5,base:{hp:750,atk:160,def:140}},
+  {id:706,name:"Goodra",slug:"goodra",rarity:"mythic",weight:0.3,base:{hp:1400,atk:280,def:240}},
+  {id:707,name:"Klefki",slug:"klefki",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:708,name:"Phantump",slug:"phantump",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:709,name:"Trevenant",slug:"trevenant",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:710,name:"Pumpkaboo",slug:"pumpkaboo",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:711,name:"Gourgeist",slug:"gourgeist",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:712,name:"Bergmite",slug:"bergmite",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:713,name:"Avalugg",slug:"avalugg",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:714,name:"Noibat",slug:"noibat",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:715,name:"Noivern",slug:"noivern",rarity:"epic",weight:5,base:{hp:750,atk:160,def:140}},
+  {id:716,name:"Xerneas",slug:"xerneas",rarity:"mythic",weight:0.3,base:{hp:1400,atk:280,def:240}},
+  {id:717,name:"Yveltal",slug:"yveltal",rarity:"mythic",weight:0.3,base:{hp:1400,atk:280,def:240}},
+  {id:718,name:"Zygarde",slug:"zygarde",rarity:"mythic",weight:0.3,base:{hp:1400,atk:280,def:240}},
+  {id:719,name:"Diancie",slug:"diancie",rarity:"mythic",weight:0.3,base:{hp:1400,atk:280,def:240}},
+  {id:720,name:"Hoopa",slug:"hoopa",rarity:"mythic",weight:0.3,base:{hp:1400,atk:280,def:240}},
+  {id:721,name:"Volcanion",slug:"volcanion",rarity:"mythic",weight:0.3,base:{hp:1400,atk:280,def:240}},
+  {id:722,name:"Rowlet",slug:"rowlet",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:723,name:"Dartrix",slug:"dartrix",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:724,name:"Decidueye",slug:"decidueye",rarity:"epic",weight:5,base:{hp:750,atk:160,def:140}},
+  {id:725,name:"Litten",slug:"litten",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:726,name:"Torracat",slug:"torracat",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:727,name:"Incineroar",slug:"incineroar",rarity:"epic",weight:5,base:{hp:750,atk:160,def:140}},
+  {id:728,name:"Popplio",slug:"popplio",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:729,name:"Brionne",slug:"brionne",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:730,name:"Primarina",slug:"primarina",rarity:"epic",weight:5,base:{hp:750,atk:160,def:140}},
+  {id:731,name:"Pikipek",slug:"pikipek",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:732,name:"Trumbeak",slug:"trumbeak",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:733,name:"Toucannon",slug:"toucannon",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:734,name:"Yungoos",slug:"yungoos",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:735,name:"Gumshoos",slug:"gumshoos",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:736,name:"Grubbin",slug:"grubbin",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:737,name:"Charjabug",slug:"charjabug",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:738,name:"Vikavolt",slug:"vikavolt",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:739,name:"Crabrawler",slug:"crabrawler",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:740,name:"Crabominable",slug:"crabominable",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:741,name:"Oricorio",slug:"oricorio",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:742,name:"Cutiefly",slug:"cutiefly",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:743,name:"Ribombee",slug:"ribombee",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:744,name:"Rockruff",slug:"rockruff",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:745,name:"Lycanroc",slug:"lycanroc",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:746,name:"Wishiwashi",slug:"wishiwashi",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:747,name:"Mareanie",slug:"mareanie",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:748,name:"Toxapex",slug:"toxapex",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:749,name:"Mudbray",slug:"mudbray",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:750,name:"Mudsdale",slug:"mudsdale",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:751,name:"Dewpider",slug:"dewpider",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:752,name:"Araquanid",slug:"araquanid",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:753,name:"Fomantis",slug:"fomantis",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:754,name:"Lurantis",slug:"lurantis",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:755,name:"Morelull",slug:"morelull",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:756,name:"Shiinotic",slug:"shiinotic",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:757,name:"Salandit",slug:"salandit",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:758,name:"Salazzle",slug:"salazzle",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:759,name:"Stufful",slug:"stufful",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:760,name:"Bewear",slug:"bewear",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:761,name:"Bounsweet",slug:"bounsweet",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:762,name:"Steenee",slug:"steenee",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:763,name:"Tsareena",slug:"tsareena",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:764,name:"Comfey",slug:"comfey",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:765,name:"Oranguru",slug:"oranguru",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:766,name:"Passimian",slug:"passimian",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:767,name:"Wimpod",slug:"wimpod",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:768,name:"Golisopod",slug:"golisopod",rarity:"epic",weight:5,base:{hp:750,atk:160,def:140}},
+  {id:769,name:"Sandygast",slug:"sandygast",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:770,name:"Palossand",slug:"palossand",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:771,name:"Pyukumuku",slug:"pyukumuku",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:772,name:"Type-null",slug:"type-null",rarity:"epic",weight:5,base:{hp:750,atk:160,def:140}},
+  {id:773,name:"Silvally",slug:"silvally",rarity:"epic",weight:5,base:{hp:750,atk:160,def:140}},
+  {id:774,name:"Minior",slug:"minior",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:775,name:"Komala",slug:"komala",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:776,name:"Turtonator",slug:"turtonator",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:777,name:"Togedemaru",slug:"togedemaru",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:778,name:"Mimikyu",slug:"mimikyu",rarity:"epic",weight:5,base:{hp:750,atk:160,def:140}},
+  {id:779,name:"Bruxish",slug:"bruxish",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:780,name:"Drampa",slug:"drampa",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:781,name:"Dhelmise",slug:"dhelmise",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:782,name:"Jangmo-o",slug:"jangmo-o",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:783,name:"Hakamo-o",slug:"hakamo-o",rarity:"epic",weight:5,base:{hp:750,atk:160,def:140}},
+  {id:784,name:"Kommo-o",slug:"kommo-o",rarity:"mythic",weight:0.3,base:{hp:1400,atk:280,def:240}},
+  {id:785,name:"Tapu-koko",slug:"tapu-koko",rarity:"legendary",weight:1.5,base:{hp:1000,atk:210,def:180}},
+  {id:786,name:"Tapu-lele",slug:"tapu-lele",rarity:"legendary",weight:1.5,base:{hp:1000,atk:210,def:180}},
+  {id:787,name:"Tapu-bulu",slug:"tapu-bulu",rarity:"legendary",weight:1.5,base:{hp:1000,atk:210,def:180}},
+  {id:788,name:"Tapu-fini",slug:"tapu-fini",rarity:"legendary",weight:1.5,base:{hp:1000,atk:210,def:180}},
+  {id:789,name:"Cosmog",slug:"cosmog",rarity:"legendary",weight:1.5,base:{hp:1000,atk:210,def:180}},
+  {id:790,name:"Cosmoem",slug:"cosmoem",rarity:"legendary",weight:1.5,base:{hp:1000,atk:210,def:180}},
+  {id:791,name:"Solgaleo",slug:"solgaleo",rarity:"mythic",weight:0.3,base:{hp:1400,atk:280,def:240}},
+  {id:792,name:"Lunala",slug:"lunala",rarity:"mythic",weight:0.3,base:{hp:1400,atk:280,def:240}},
+  {id:793,name:"Nihilego",slug:"nihilego",rarity:"legendary",weight:1.5,base:{hp:1000,atk:210,def:180}},
+  {id:794,name:"Buzzwole",slug:"buzzwole",rarity:"legendary",weight:1.5,base:{hp:1000,atk:210,def:180}},
+  {id:795,name:"Pheromosa",slug:"pheromosa",rarity:"legendary",weight:1.5,base:{hp:1000,atk:210,def:180}},
+  {id:796,name:"Xurkitree",slug:"xurkitree",rarity:"legendary",weight:1.5,base:{hp:1000,atk:210,def:180}},
+  {id:797,name:"Celesteela",slug:"celesteela",rarity:"legendary",weight:1.5,base:{hp:1000,atk:210,def:180}},
+  {id:798,name:"Kartana",slug:"kartana",rarity:"legendary",weight:1.5,base:{hp:1000,atk:210,def:180}},
+  {id:799,name:"Guzzlord",slug:"guzzlord",rarity:"legendary",weight:1.5,base:{hp:1000,atk:210,def:180}},
+  {id:800,name:"Necrozma",slug:"necrozma",rarity:"mythic",weight:0.3,base:{hp:1400,atk:280,def:240}},
+  {id:801,name:"Magearna",slug:"magearna",rarity:"mythic",weight:0.3,base:{hp:1400,atk:280,def:240}},
+  {id:802,name:"Marshadow",slug:"marshadow",rarity:"mythic",weight:0.3,base:{hp:1400,atk:280,def:240}},
+  {id:803,name:"Poipole",slug:"poipole",rarity:"legendary",weight:1.5,base:{hp:1000,atk:210,def:180}},
+  {id:804,name:"Naganadel",slug:"naganadel",rarity:"legendary",weight:1.5,base:{hp:1000,atk:210,def:180}},
+  {id:805,name:"Stakataka",slug:"stakataka",rarity:"legendary",weight:1.5,base:{hp:1000,atk:210,def:180}},
+  {id:806,name:"Blacephalon",slug:"blacephalon",rarity:"legendary",weight:1.5,base:{hp:1000,atk:210,def:180}},
+  {id:807,name:"Zeraora",slug:"zeraora",rarity:"mythic",weight:0.3,base:{hp:1400,atk:280,def:240}},
+  {id:808,name:"Meltan",slug:"meltan",rarity:"legendary",weight:1.5,base:{hp:1000,atk:210,def:180}},
+  {id:809,name:"Melmetal",slug:"melmetal",rarity:"mythic",weight:0.3,base:{hp:1400,atk:280,def:240}},
+  {id:810,name:"Grookey",slug:"grookey",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:811,name:"Thwackey",slug:"thwackey",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:812,name:"Rillaboom",slug:"rillaboom",rarity:"epic",weight:5,base:{hp:750,atk:160,def:140}},
+  {id:813,name:"Scorbunny",slug:"scorbunny",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:814,name:"Raboot",slug:"raboot",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:815,name:"Cinderace",slug:"cinderace",rarity:"epic",weight:5,base:{hp:750,atk:160,def:140}},
+  {id:816,name:"Sobble",slug:"sobble",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:817,name:"Drizzile",slug:"drizzile",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:818,name:"Inteleon",slug:"inteleon",rarity:"epic",weight:5,base:{hp:750,atk:160,def:140}},
+  {id:819,name:"Skwovet",slug:"skwovet",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:820,name:"Greedent",slug:"greedent",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:821,name:"Rookidee",slug:"rookidee",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:822,name:"Corvisquire",slug:"corvisquire",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:823,name:"Corviknight",slug:"corviknight",rarity:"epic",weight:5,base:{hp:750,atk:160,def:140}},
+  {id:824,name:"Blipbug",slug:"blipbug",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:825,name:"Dottler",slug:"dottler",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:826,name:"Orbeetle",slug:"orbeetle",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:827,name:"Nickit",slug:"nickit",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:828,name:"Thievul",slug:"thievul",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:829,name:"Gossifleur",slug:"gossifleur",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:830,name:"Eldegoss",slug:"eldegoss",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:831,name:"Wooloo",slug:"wooloo",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:832,name:"Dubwool",slug:"dubwool",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:833,name:"Chewtle",slug:"chewtle",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:834,name:"Drednaw",slug:"drednaw",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:835,name:"Yamper",slug:"yamper",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:836,name:"Boltund",slug:"boltund",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:837,name:"Rolycoly",slug:"rolycoly",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:838,name:"Carkol",slug:"carkol",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:839,name:"Coalossal",slug:"coalossal",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:840,name:"Applin",slug:"applin",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:841,name:"Flapple",slug:"flapple",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:842,name:"Appletun",slug:"appletun",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:843,name:"Silicobra",slug:"silicobra",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:844,name:"Sandaconda",slug:"sandaconda",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:845,name:"Cramorant",slug:"cramorant",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:846,name:"Arrokuda",slug:"arrokuda",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:847,name:"Barraskewda",slug:"barraskewda",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:848,name:"Toxel",slug:"toxel",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:849,name:"Toxtricity",slug:"toxtricity",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:850,name:"Sizzlipede",slug:"sizzlipede",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:851,name:"Centiskorch",slug:"centiskorch",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:852,name:"Clobbopus",slug:"clobbopus",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:853,name:"Grapploct",slug:"grapploct",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:854,name:"Sinistea",slug:"sinistea",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:855,name:"Polteageist",slug:"polteageist",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:856,name:"Hatenna",slug:"hatenna",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:857,name:"Hattrem",slug:"hattrem",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:858,name:"Hatterene",slug:"hatterene",rarity:"epic",weight:5,base:{hp:750,atk:160,def:140}},
+  {id:859,name:"Impidimp",slug:"impidimp",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:860,name:"Morgrem",slug:"morgrem",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:861,name:"Grimmsnarl",slug:"grimmsnarl",rarity:"epic",weight:5,base:{hp:750,atk:160,def:140}},
+  {id:862,name:"Obstagoon",slug:"obstagoon",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:863,name:"Perrserker",slug:"perrserker",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:864,name:"Cursola",slug:"cursola",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:865,name:"Sirfetchd",slug:"sirfetchd",rarity:"epic",weight:5,base:{hp:750,atk:160,def:140}},
+  {id:866,name:"Mr-rime",slug:"mr-rime",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:867,name:"Runerigus",slug:"runerigus",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:868,name:"Milcery",slug:"milcery",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:869,name:"Alcremie",slug:"alcremie",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:870,name:"Falinks",slug:"falinks",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:871,name:"Pincurchin",slug:"pincurchin",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:872,name:"Snom",slug:"snom",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:873,name:"Frosmoth",slug:"frosmoth",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:874,name:"Stonjourner",slug:"stonjourner",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:875,name:"Eiscue",slug:"eiscue",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:876,name:"Indeedee",slug:"indeedee",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:877,name:"Morpeko",slug:"morpeko",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:878,name:"Cufant",slug:"cufant",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:879,name:"Copperajah",slug:"copperajah",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:880,name:"Dracozolt",slug:"dracozolt",rarity:"epic",weight:5,base:{hp:750,atk:160,def:140}},
+  {id:881,name:"Arctozolt",slug:"arctozolt",rarity:"epic",weight:5,base:{hp:750,atk:160,def:140}},
+  {id:882,name:"Dracovish",slug:"dracovish",rarity:"epic",weight:5,base:{hp:750,atk:160,def:140}},
+  {id:883,name:"Arctovish",slug:"arctovish",rarity:"epic",weight:5,base:{hp:750,atk:160,def:140}},
+  {id:884,name:"Duraludon",slug:"duraludon",rarity:"epic",weight:5,base:{hp:750,atk:160,def:140}},
+  {id:885,name:"Dreepy",slug:"dreepy",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:886,name:"Drakloak",slug:"drakloak",rarity:"epic",weight:5,base:{hp:750,atk:160,def:140}},
+  {id:887,name:"Dragapult",slug:"dragapult",rarity:"mythic",weight:0.3,base:{hp:1400,atk:280,def:240}},
+  {id:888,name:"Zacian",slug:"zacian",rarity:"mythic",weight:0.3,base:{hp:1400,atk:280,def:240}},
+  {id:889,name:"Zamazenta",slug:"zamazenta",rarity:"mythic",weight:0.3,base:{hp:1400,atk:280,def:240}},
+  {id:890,name:"Eternatus",slug:"eternatus",rarity:"mythic",weight:0.3,base:{hp:1400,atk:280,def:240}},
+  {id:891,name:"Kubfu",slug:"kubfu",rarity:"legendary",weight:1.5,base:{hp:1000,atk:210,def:180}},
+  {id:892,name:"Urshifu",slug:"urshifu",rarity:"mythic",weight:0.3,base:{hp:1400,atk:280,def:240}},
+  {id:893,name:"Zarude",slug:"zarude",rarity:"mythic",weight:0.3,base:{hp:1400,atk:280,def:240}},
+  {id:894,name:"Regieleki",slug:"regieleki",rarity:"legendary",weight:1.5,base:{hp:1000,atk:210,def:180}},
+  {id:895,name:"Regidrago",slug:"regidrago",rarity:"legendary",weight:1.5,base:{hp:1000,atk:210,def:180}},
+  {id:896,name:"Glastrier",slug:"glastrier",rarity:"legendary",weight:1.5,base:{hp:1000,atk:210,def:180}},
+  {id:897,name:"Spectrier",slug:"spectrier",rarity:"legendary",weight:1.5,base:{hp:1000,atk:210,def:180}},
+  {id:898,name:"Calyrex",slug:"calyrex",rarity:"mythic",weight:0.3,base:{hp:1400,atk:280,def:240}},
+  {id:899,name:"Wyrdeer",slug:"wyrdeer",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:900,name:"Kleavor",slug:"kleavor",rarity:"epic",weight:5,base:{hp:750,atk:160,def:140}},
+  {id:901,name:"Ursaluna",slug:"ursaluna",rarity:"epic",weight:5,base:{hp:750,atk:160,def:140}},
+  {id:902,name:"Basculegion",slug:"basculegion",rarity:"epic",weight:5,base:{hp:750,atk:160,def:140}},
+  {id:903,name:"Sneasler",slug:"sneasler",rarity:"epic",weight:5,base:{hp:750,atk:160,def:140}},
+  {id:904,name:"Overqwil",slug:"overqwil",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:905,name:"Enamorus",slug:"enamorus",rarity:"legendary",weight:1.5,base:{hp:1000,atk:210,def:180}},
+  {id:906,name:"Sprigatito",slug:"sprigatito",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:907,name:"Floragato",slug:"floragato",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:908,name:"Meowscarada",slug:"meowscarada",rarity:"epic",weight:5,base:{hp:750,atk:160,def:140}},
+  {id:909,name:"Fuecoco",slug:"fuecoco",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:910,name:"Crocalor",slug:"crocalor",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:911,name:"Skeledirge",slug:"skeledirge",rarity:"epic",weight:5,base:{hp:750,atk:160,def:140}},
+  {id:912,name:"Quaxly",slug:"quaxly",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:913,name:"Quaxwell",slug:"quaxwell",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:914,name:"Quaquaval",slug:"quaquaval",rarity:"epic",weight:5,base:{hp:750,atk:160,def:140}},
+  {id:915,name:"Lechonk",slug:"lechonk",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:916,name:"Oinkologne",slug:"oinkologne",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:917,name:"Tarountula",slug:"tarountula",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:918,name:"Spidops",slug:"spidops",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:919,name:"Nymble",slug:"nymble",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:920,name:"Lokix",slug:"lokix",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:921,name:"Pawmi",slug:"pawmi",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:922,name:"Pawmo",slug:"pawmo",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:923,name:"Pawmot",slug:"pawmot",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:924,name:"Tandemaus",slug:"tandemaus",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:925,name:"Maushold",slug:"maushold",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:926,name:"Fidough",slug:"fidough",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:927,name:"Dachsbun",slug:"dachsbun",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:928,name:"Smoliv",slug:"smoliv",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:929,name:"Dolliv",slug:"dolliv",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:930,name:"Arboliva",slug:"arboliva",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:931,name:"Squawkabilly",slug:"squawkabilly",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:932,name:"Nacli",slug:"nacli",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:933,name:"Naclstack",slug:"naclstack",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:934,name:"Garganacl",slug:"garganacl",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:935,name:"Charcadet",slug:"charcadet",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:936,name:"Armarouge",slug:"armarouge",rarity:"epic",weight:5,base:{hp:750,atk:160,def:140}},
+  {id:937,name:"Ceruledge",slug:"ceruledge",rarity:"epic",weight:5,base:{hp:750,atk:160,def:140}},
+  {id:938,name:"Tadbulb",slug:"tadbulb",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:939,name:"Bellibolt",slug:"bellibolt",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:940,name:"Wattrel",slug:"wattrel",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:941,name:"Kilowattrel",slug:"kilowattrel",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:942,name:"Maschiff",slug:"maschiff",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:943,name:"Mabosstiff",slug:"mabosstiff",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:944,name:"Shroodle",slug:"shroodle",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:945,name:"Grafaiai",slug:"grafaiai",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:946,name:"Bramblin",slug:"bramblin",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:947,name:"Brambleghast",slug:"brambleghast",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:948,name:"Toedscool",slug:"toedscool",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:949,name:"Toedscruel",slug:"toedscruel",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:950,name:"Klawf",slug:"klawf",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:951,name:"Capsakid",slug:"capsakid",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:952,name:"Scovillain",slug:"scovillain",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:953,name:"Rellor",slug:"rellor",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:954,name:"Rabsca",slug:"rabsca",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:955,name:"Flittle",slug:"flittle",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:956,name:"Espathra",slug:"espathra",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:957,name:"Tinkatink",slug:"tinkatink",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:958,name:"Tinkatuff",slug:"tinkatuff",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:959,name:"Tinkaton",slug:"tinkaton",rarity:"epic",weight:5,base:{hp:750,atk:160,def:140}},
+  {id:960,name:"Wiglett",slug:"wiglett",rarity:"common",weight:50,base:{hp:200,atk:60,def:55}},
+  {id:961,name:"Wugtrio",slug:"wugtrio",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:962,name:"Bombirdier",slug:"bombirdier",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:963,name:"Finizen",slug:"finizen",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:964,name:"Palafin",slug:"palafin",rarity:"epic",weight:5,base:{hp:750,atk:160,def:140}},
+  {id:965,name:"Varoom",slug:"varoom",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:966,name:"Revavroom",slug:"revavroom",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:967,name:"Cyclizar",slug:"cyclizar",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:968,name:"Orthworm",slug:"orthworm",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:969,name:"Glimmet",slug:"glimmet",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:970,name:"Glimmora",slug:"glimmora",rarity:"epic",weight:5,base:{hp:750,atk:160,def:140}},
+  {id:971,name:"Greavard",slug:"greavard",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:972,name:"Houndstone",slug:"houndstone",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:973,name:"Flamigo",slug:"flamigo",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:974,name:"Cetoddle",slug:"cetoddle",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:975,name:"Cetitan",slug:"cetitan",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:976,name:"Veluza",slug:"veluza",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:977,name:"Dondozo",slug:"dondozo",rarity:"epic",weight:5,base:{hp:750,atk:160,def:140}},
+  {id:978,name:"Tatsugiri",slug:"tatsugiri",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:979,name:"Annihilape",slug:"annihilape",rarity:"epic",weight:5,base:{hp:750,atk:160,def:140}},
+  {id:980,name:"Clodsire",slug:"clodsire",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:981,name:"Farigiraf",slug:"farigiraf",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:982,name:"Dudunsparce",slug:"dudunsparce",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:983,name:"Kingambit",slug:"kingambit",rarity:"mythic",weight:0.3,base:{hp:1400,atk:280,def:240}},
+  {id:984,name:"Great-tusk",slug:"great-tusk",rarity:"legendary",weight:1.5,base:{hp:1000,atk:210,def:180}},
+  {id:985,name:"Scream-tail",slug:"scream-tail",rarity:"legendary",weight:1.5,base:{hp:1000,atk:210,def:180}},
+  {id:986,name:"Brute-bonnet",slug:"brute-bonnet",rarity:"legendary",weight:1.5,base:{hp:1000,atk:210,def:180}},
+  {id:987,name:"Flutter-mane",slug:"flutter-mane",rarity:"legendary",weight:1.5,base:{hp:1000,atk:210,def:180}},
+  {id:988,name:"Slither-wing",slug:"slither-wing",rarity:"legendary",weight:1.5,base:{hp:1000,atk:210,def:180}},
+  {id:989,name:"Sandy-shocks",slug:"sandy-shocks",rarity:"legendary",weight:1.5,base:{hp:1000,atk:210,def:180}},
+  {id:990,name:"Iron-treads",slug:"iron-treads",rarity:"legendary",weight:1.5,base:{hp:1000,atk:210,def:180}},
+  {id:991,name:"Iron-bundle",slug:"iron-bundle",rarity:"legendary",weight:1.5,base:{hp:1000,atk:210,def:180}},
+  {id:992,name:"Iron-hands",slug:"iron-hands",rarity:"legendary",weight:1.5,base:{hp:1000,atk:210,def:180}},
+  {id:993,name:"Iron-jugulis",slug:"iron-jugulis",rarity:"legendary",weight:1.5,base:{hp:1000,atk:210,def:180}},
+  {id:994,name:"Iron-moth",slug:"iron-moth",rarity:"legendary",weight:1.5,base:{hp:1000,atk:210,def:180}},
+  {id:995,name:"Iron-thorns",slug:"iron-thorns",rarity:"legendary",weight:1.5,base:{hp:1000,atk:210,def:180}},
+  {id:996,name:"Frigibax",slug:"frigibax",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:997,name:"Arctibax",slug:"arctibax",rarity:"epic",weight:5,base:{hp:750,atk:160,def:140}},
+  {id:998,name:"Baxcalibur",slug:"baxcalibur",rarity:"mythic",weight:0.3,base:{hp:1400,atk:280,def:240}},
+  {id:999,name:"Gimmighoul",slug:"gimmighoul",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:1000,name:"Gholdengo",slug:"gholdengo",rarity:"mythic",weight:0.3,base:{hp:1400,atk:280,def:240}},
+  {id:1001,name:"Wo-chien",slug:"wo-chien",rarity:"legendary",weight:1.5,base:{hp:1000,atk:210,def:180}},
+  {id:1002,name:"Chien-pao",slug:"chien-pao",rarity:"legendary",weight:1.5,base:{hp:1000,atk:210,def:180}},
+  {id:1003,name:"Ting-lu",slug:"ting-lu",rarity:"legendary",weight:1.5,base:{hp:1000,atk:210,def:180}},
+  {id:1004,name:"Chi-yu",slug:"chi-yu",rarity:"legendary",weight:1.5,base:{hp:1000,atk:210,def:180}},
+  {id:1005,name:"Roaring-moon",slug:"roaring-moon",rarity:"legendary",weight:1.5,base:{hp:1000,atk:210,def:180}},
+  {id:1006,name:"Iron-valiant",slug:"iron-valiant",rarity:"legendary",weight:1.5,base:{hp:1000,atk:210,def:180}},
+  {id:1007,name:"Koraidon",slug:"koraidon",rarity:"mythic",weight:0.3,base:{hp:1400,atk:280,def:240}},
+  {id:1008,name:"Miraidon",slug:"miraidon",rarity:"mythic",weight:0.3,base:{hp:1400,atk:280,def:240}},
+  {id:1009,name:"Walking-wake",slug:"walking-wake",rarity:"legendary",weight:1.5,base:{hp:1000,atk:210,def:180}},
+  {id:1010,name:"Iron-leaves",slug:"iron-leaves",rarity:"legendary",weight:1.5,base:{hp:1000,atk:210,def:180}},
+  {id:1011,name:"Dipplin",slug:"dipplin",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:1012,name:"Poltchageist",slug:"poltchageist",rarity:"uncommon",weight:25,base:{hp:350,atk:90,def:80}},
+  {id:1013,name:"Sinistcha",slug:"sinistcha",rarity:"rare",weight:12,base:{hp:500,atk:120,def:110}},
+  {id:1014,name:"Okidogi",slug:"okidogi",rarity:"legendary",weight:1.5,base:{hp:1000,atk:210,def:180}},
+  {id:1015,name:"Munkidori",slug:"munkidori",rarity:"legendary",weight:1.5,base:{hp:1000,atk:210,def:180}},
+  {id:1016,name:"Fezandipiti",slug:"fezandipiti",rarity:"legendary",weight:1.5,base:{hp:1000,atk:210,def:180}},
+  {id:1017,name:"Ogerpon",slug:"ogerpon",rarity:"mythic",weight:0.3,base:{hp:1400,atk:280,def:240}},
+  {id:1018,name:"Gouging-fire",slug:"gouging-fire",rarity:"legendary",weight:1.5,base:{hp:1000,atk:210,def:180}},
+  {id:1019,name:"Raging-bolt",slug:"raging-bolt",rarity:"legendary",weight:1.5,base:{hp:1000,atk:210,def:180}},
+  {id:1020,name:"Iron-boulder",slug:"iron-boulder",rarity:"legendary",weight:1.5,base:{hp:1000,atk:210,def:180}},
+  {id:1021,name:"Iron-crown",slug:"iron-crown",rarity:"legendary",weight:1.5,base:{hp:1000,atk:210,def:180}},
+  {id:1022,name:"Terapagos",slug:"terapagos",rarity:"mythic",weight:0.3,base:{hp:1400,atk:280,def:240}},
+  {id:1023,name:"Pecharunt",slug:"pecharunt",rarity:"mythic",weight:0.3,base:{hp:1400,atk:280,def:240}},
+  {id:1024,name:"Archaludon",slug:"archaludon",rarity:"epic",weight:5,base:{hp:750,atk:160,def:140}},
+  {id:1025,name:"Hydrapple",slug:"hydrapple",rarity:"epic",weight:5,base:{hp:750,atk:160,def:140}}
+];
+
+// ── PLAYER ───────────────────────────────────────────────────────────────────
+const player = {
+  hammers: 0, diamonds: 0, gold: 0,
+  candy1: 0, candy2: 0, candy3: 0,
+  coins: 0, bp: 0,
+  pokemon: [],   // [{id, name, slug, rarity, tier, stats}]
+  userLevel: 1, userExp: 0
+};
+
+// ── EXP CURVE ────────────────────────────────────────────────────────────────
+function expToNextUserLevel(lv) { return Math.floor(200 * Math.pow(lv, 1.5)); }
+
+// ── RARITY CONFIG ────────────────────────────────────────────────────────────
+const RARITY_SELL_VALUE = { common:5, uncommon:15, rare:50, epic:150, legendary:500, mythic:2000 };
+const RARITY_COLORS     = { common:"#aaa", uncommon:"#4fc3f7", rare:"#7c4dff", epic:"#ff6d00", legendary:"#ffd700", mythic:"#f06292" };
+
+// Tier multipliers (egg enhancement)
+const TIERS = [
+  {tier:"+15",  w:40,   m:1.0},  {tier:"+20",  w:25,   m:1.2},
+  {tier:"+25",  w:15,   m:1.4},  {tier:"+30",  w:8,    m:1.6},
+  {tier:"+50",  w:5,    m:2.0},  {tier:"+60",  w:3,    m:2.3},
+  {tier:"+80",  w:2,    m:3.0},  {tier:"+100", w:1,    m:4.0},
+  {tier:"+200", w:0.3,  m:6.0},  {tier:"+250", w:0.15, m:7.5},
+  {tier:"+300", w:0.08, m:9.0},  {tier:"+350", w:0.03, m:11.0},
+  {tier:"+400", w:0.01, m:14.0}
+];
+
+// ── REWARD TABLE ─────────────────────────────────────────────────────────────
+// Exact drop rates matching the displayed table above. Listed percentages sum
+// to 96.678%; the 3.322% gap is folded into Candy 1, the most common reward.
+const REWARD_TYPES = [
+  {type:"candy1",    w:38.322},
+  {type:"diamonds",  w:25.000},
+  {type:"candy2",    w:18.000},
+  {type:"gold",      w:10.000},
+  {type:"candy3",    w:8.500},
+  {type:"common",    w:0.100},
+  {type:"uncommon",  w:0.050},
+  {type:"rare",      w:0.020},
+  {type:"epic",      w:0.005},
+  {type:"legendary", w:0.002},
+  {type:"mythic",    w:0.001}
+];
+
+const POKEMON_RARITIES = new Set(["common","uncommon","rare","epic","legendary","mythic"]);
+
+// Precompute per-rarity pokedex pools so picking a specific Pokemon within a
+// chosen rarity tier is still weighted (rarer ones within that tier are
+// still rarer than common ones within the same tier).
+const DEX_BY_RARITY = {};
+POKEDEX.forEach(p=>{
+  if(!DEX_BY_RARITY[p.rarity]) DEX_BY_RARITY[p.rarity]=[];
+  DEX_BY_RARITY[p.rarity].push(p);
+});
+
+// ── INVENTORY ────────────────────────────────────────────────────────────────
+const inventory = {
+  items: [
+    {id:"candy1",   name:"Candy 1 (Lv 1-49)",   amount:0},
+    {id:"candy2",   name:"Candy 2 (Lv 50-99)",  amount:0},
+    {id:"candy3",   name:"Candy 3 (Lv 100+)",   amount:0},
+    {id:"gold",     name:"Gold",                 amount:0},
+    {id:"diamonds", name:"Diamonds",             amount:0}
+  ],
+  chests:[
+    {id:"eggpack",   name:"Golden Egg Pack",     amount:0},
+    {id:"superpack", name:"Super Optional Pack", amount:0}
+  ]
+};
+
+// ── HELPERS ──────────────────────────────────────────────────────────────────
+function result(html){ document.getElementById("result").innerHTML = html; }
+
+function weightedPick(arr, weightKey){
+  const total = arr.reduce((s,x) => s + x[weightKey], 0);
+  let r = Math.random() * total;
+  for(const x of arr){ if(r < x[weightKey]) return x; r -= x[weightKey]; }
+  return arr[0];
+}
+
+function rollDexPokemonOfRarity(rarity){
+  const pool = DEX_BY_RARITY[rarity];
+  if(!pool || pool.length===0) return null;
+  const totalW = pool.reduce((s,p)=>s+p.weight,0);
+  let r = Math.random() * totalW;
+  for(const p of pool){ if(r < p.weight) return p; r -= p.weight; }
+  return pool[0];
+}
+
+function calcStats(base, multiplier){
+  return {hp:Math.floor(base.hp*multiplier), atk:Math.floor(base.atk*multiplier), def:Math.floor(base.def*multiplier)};
+}
+
+// ── INIT ─────────────────────────────────────────────────────────────────────
+function grantWeeklyHammers(){ player.hammers += 1000000; updateHUD(); }
+
+// ── REWARD LOGIC ─────────────────────────────────────────────────────────────
+function giveReward(){
+  const rType = weightedPick(REWARD_TYPES, "w").type;
+
+  if(POKEMON_RARITIES.has(rType)){
+    const mon = rollDexPokemonOfRarity(rType);
+    const tier  = weightedPick(TIERS, "w");
+    const stats = calcStats(mon.base, tier.m);
+    player.pokemon.push({id:mon.id, name:mon.name, slug:mon.slug, rarity:mon.rarity, tier:tier.tier, stats});
+    return {label:`Pokémon: ${mon.name} ${tier.tier} [${mon.rarity}]`, slug:mon.slug, name:mon.name};
+  }
+  if(rType === "diamonds"){
+    const amt = 100; player.diamonds += amt;
+    inventory.items.find(i=>i.id==="diamonds").amount += amt;
+    return {label:`Diamonds +${amt}`, slug:null};
+  }
+  if(rType === "gold"){
+    const amt = 10000; player.gold += amt;
+    inventory.items.find(i=>i.id==="gold").amount += amt;
+    return {label:`Gold +${amt}`, slug:null};
+  }
+  if(rType === "candy1"){ inventory.items.find(i=>i.id==="candy1").amount++; player.candy1++; return {label:"Candy 1 +1", slug:null}; }
+  if(rType === "candy2"){ inventory.items.find(i=>i.id==="candy2").amount++; player.candy2++; return {label:"Candy 2 +1", slug:null}; }
+  if(rType === "candy3"){ inventory.items.find(i=>i.id==="candy3").amount++; player.candy3++; return {label:"Candy 3 +1", slug:null}; }
+}
+
+// ── HUD ──────────────────────────────────────────────────────────────────────
+function updateHUD(){
+  const expNeeded = expToNextUserLevel(player.userLevel);
+  const pct = Math.min(100, (player.userExp / expNeeded * 100)).toFixed(1);
+  document.getElementById("hud").innerHTML = `
+    <strong>User Level: ${player.userLevel}</strong>
+    <div class="exp-bar-wrap"><div class="exp-bar-fill" style="width:${pct}%"></div></div>
+    <span style="font-size:11px;opacity:0.7">EXP ${Math.floor(player.userExp).toLocaleString()} / ${expNeeded.toLocaleString()} (${pct}%)</span><br><br>
+    🔨 Hammers: <strong>${player.hammers.toLocaleString()}</strong> &nbsp;|&nbsp;
+    💎 Diamonds: ${player.diamonds.toLocaleString()} &nbsp;|&nbsp;
+    🥇 Gold: ${player.gold.toLocaleString()}<br>
+    🍬 Candy 1: ${player.candy1} &nbsp; Candy 2: ${player.candy2} &nbsp; Candy 3: ${player.candy3}<br>
+    📖 Pokémon collected: ${new Set(player.pokemon.map(p=>p.id)).size} / ${POKEDEX.length}
+  `;
+  document.getElementById("coins-display").textContent    = `Coins: ${player.coins}`;
+  document.getElementById("diamonds-display").textContent = `Diamonds: ${player.diamonds}`;
+  document.getElementById("bp-display").textContent       = `BP: ${player.bp}`;
+  document.getElementById("level-display").textContent    = `Lv.${player.userLevel}`;
+}
+
+// ── EGGS ─────────────────────────────────────────────────────────────────────
+function createEggs(){
+  const container = document.getElementById("egg-container");
+  container.innerHTML = "";
+  for(let i=0;i<6;i++){
+    const wrapper = document.createElement("div"); wrapper.className="egg-wrapper";
+    const egg     = document.createElement("div"); egg.className="egg";
+    const hammer  = document.createElement("div"); hammer.className="hammer";
+    hammer.innerHTML=`<div class="hammer-head"></div><div class="hammer-handle"></div>`;
+    egg.addEventListener("click",()=>{
+      if(player.hammers < 1){ result("No hammers left!"); return; }
+      player.hammers--;
+      hammer.classList.add("hammer-smash");
+      setTimeout(()=>hammer.classList.remove("hammer-smash"),250);
+      egg.classList.add("cracked");
+      const reward = giveReward();
+      if(reward.slug){
+        result(`<div style="display:flex;align-items:center;gap:8px;">
+          <img src="https://img.pokemondb.net/sprites/home/normal/2x/${reward.slug}.jpg" alt="${reward.name}" style="width:40px;height:40px;">
+          <span>${reward.label}</span>
+        </div>`);
+      } else {
+        result(reward.label);
+      }
+      updateHUD();
+      refreshDexIfVisible();
+    });
+    wrapper.appendChild(egg); wrapper.appendChild(hammer);
+    container.appendChild(wrapper);
+  }
+}
+
+function crackMany(n){
+  if(player.hammers < n){ result(`Need at least ${n} hammers!`); return; }
+  player.hammers -= n;
+  const log = [];
+  for(let i=0;i<n;i++) log.push(giveReward());
+  updateHUD();
+  renderInventory();
+  refreshDexIfVisible();
+
+  const summary = {};
+  log.forEach(r=>{
+    if(!summary[r.label]) summary[r.label] = {count:0, slug:r.slug};
+    summary[r.label].count++;
+  });
+  const sorted = Object.entries(summary).sort((a,b)=>b[1].count-a[1].count);
+  let out = `<h3>${n} Egg Results</h3>`;
+  sorted.forEach(([label, info])=>{
+    if(info.slug){
+      out += `<div style="display:flex;align-items:center;gap:6px;margin:2px 0;">
+        <img src="https://img.pokemondb.net/sprites/home/normal/2x/${info.slug}.jpg" alt="" style="width:28px;height:28px;flex-shrink:0;" onerror="this.style.display='none'">
+        <span>${label}: <strong>${info.count}</strong></span>
+      </div>`;
+    } else {
+      out += `<div style="margin:2px 0;">${label}: <strong>${info.count}</strong></div>`;
+    }
+  });
+  result(out);
+}
+
+document.getElementById("use1000").addEventListener("click",()=>crackMany(1000));
+document.getElementById("use100").addEventListener("click", ()=>crackMany(100));
+
+// ── INVENTORY RENDER ─────────────────────────────────────────────────────────
+function renderInventory(){
+  const itemTab  = document.getElementById("items");
+  const chestTab = document.getElementById("chests");
+  itemTab.innerHTML=""; chestTab.innerHTML="";
+
+  inventory.items.forEach(item=>{
+    itemTab.innerHTML+=`
+      <div class="item-card">
+        <div class="item-header"><div class="item-icon"></div><div class="item-name">${item.name}</div></div>
+        <div>Amount: <strong>${item.amount.toLocaleString()}</strong></div>
+        <div class="item-footer"><span></span><button class="use-button" onclick="useItem('${item.id}')">Use</button></div>
+      </div>`;
+  });
+  inventory.chests.forEach(chest=>{
+    chestTab.innerHTML+=`
+      <div class="item-card">
+        <div class="item-header"><div class="item-icon"></div><div class="item-name">${chest.name}</div></div>
+        <div>Amount: <strong>${chest.amount}</strong></div>
+        <div class="item-footer"><span></span><button class="use-button" onclick="openChest('${chest.id}')">Open</button></div>
+      </div>`;
+  });
+}
+
+function useItem(id){
+  const item = inventory.items.find(i=>i.id===id);
+  if(!item||item.amount<=0) return;
+  if(id==="candy1"){ item.amount--; player.candy1--; applyCandy(1); }
+  else if(id==="candy2"){ item.amount--; player.candy2--; applyCandy(2); }
+  else if(id==="candy3"){ item.amount--; player.candy3--; applyCandy(3); }
+  else if(id==="gold" && item.amount>=1000){ player.coins+=1000; item.amount-=1000; }
+  renderInventory(); updateHUD();
+}
+
+function openChest(id){
+  const c=inventory.chests.find(c=>c.id===id);
+  if(!c||c.amount<=0) return;
+  c.amount--; renderInventory(); result(`Opened: ${c.name}`);
+}
+
+// ── CANDY → USER LEVEL ───────────────────────────────────────────────────────
+function applyCandy(type){
+  const lv=player.userLevel, need=expToNextUserLevel(lv);
+  if(type===1){
+    if(lv<50){       player.userLevel++; player.userExp=0; result(`Candy 1: Level up! → Lv.${player.userLevel}`); }
+    else {            player.userExp+=need*0.0001; result("Candy 1: +0.01% EXP (outside Lv 1-49 range)"); }
+  }
+  if(type===2){
+    if(lv>=50&&lv<100){ player.userLevel++; player.userExp=0; result(`Candy 2: Level up! → Lv.${player.userLevel}`); }
+    else {               player.userExp+=need*0.0003; result("Candy 2: +0.03% EXP (outside Lv 50-99 range)"); }
+  }
+  if(type===3){
+    if(lv>=100&&lv<150){ player.userLevel++; player.userExp=0; result(`Candy 3: Level up! → Lv.${player.userLevel}`); }
+    else {                player.userExp+=need*0.0005; result("Candy 3: +0.05% EXP (outside Lv 100-149 range)"); }
+  }
+  while(player.userExp >= expToNextUserLevel(player.userLevel)){
+    player.userExp -= expToNextUserLevel(player.userLevel);
+    player.userLevel++;
+  }
+  updateHUD();
+}
+
+// ── POKÉDEX TAB ───────────────────────────────────────────────────────────────
+let dexFilter = "all", dexSearch = "";
+
+function getOwnedMap(){
+  const map = {};
+  player.pokemon.forEach(p=>{
+    if(!map[p.id]) map[p.id]={count:0, best:null};
+    map[p.id].count++;
+    if(!map[p.id].best || p.stats.atk > map[p.id].best.stats.atk) map[p.id].best=p;
+  });
+  return map;
+}
+
+function renderPokemonTab(){
+  const grid = document.getElementById("pokemon-grid");
+  const ownedMap = getOwnedMap();
+  const totalOwned = Object.keys(ownedMap).length;
+  const search = dexSearch.toLowerCase();
+
+  document.getElementById("dex-stats").textContent =
+    `${totalOwned} / ${POKEDEX.length} collected`;
+
+  const filtered = POKEDEX.filter(p=>{
+    if(search && !p.name.toLowerCase().includes(search) && !String(p.id).includes(search)) return false;
+    const owned = ownedMap[p.id];
+    const count = owned ? owned.count : 0;
+    if(dexFilter==="owned"    && count===0)   return false;
+    if(dexFilter==="missing"  && count>0)     return false;
+    if(dexFilter==="dupes"    && count<=1)    return false;
+    if(["common","uncommon","rare","epic","legendary","mythic"].includes(dexFilter) && p.rarity!==dexFilter) return false;
+    return true;
+  });
+
+  // Build HTML in one pass for performance
+  let html = "";
+  filtered.forEach(p=>{
+    const owned = ownedMap[p.id];
+    const count = owned ? owned.count : 0;
+    const dupes = Math.max(0, count-1);
+    const cardClass = count===0 ? "missing" : (dupes>0 ? "dupe" : "owned");
+    const sellVal = RARITY_SELL_VALUE[p.rarity];
+    const imgUrl = `https://img.pokemondb.net/sprites/home/normal/2x/${p.slug}.jpg`;
+    const bestTier = owned&&owned.best ? owned.best.tier : "";
+    html += `<div class="dex-card ${cardClass}" title="${p.name} #${String(p.id).padStart(4,'0')} [${p.rarity}]${bestTier?' '+bestTier:''}">
+      ${dupes>0 ? `<div class="dupe-badge">x${count}</div>` : ""}
+      <img src="${imgUrl}" alt="${p.name}" loading="lazy" onerror="this.style.opacity='0.3'">
+      <div class="dex-num">#${String(p.id).padStart(4,"0")}</div>
+      <div class="dex-name"><span class="rarity-dot rarity-${p.rarity}"></span>${p.name}</div>
+      ${dupes>0 ? `<button class="sell-btn-sm" onclick="sellDuplicate(${p.id},event)">Sell (${sellVal}💎)</button>` : ""}
+    </div>`;
+  });
+
+  grid.innerHTML = html || `<div style="opacity:0.5;padding:20px;">No Pokémon match this filter.</div>`;
+}
+
+function sellDuplicate(dexId, e){
+  e.stopPropagation();
+  const owned = player.pokemon.filter(p=>p.id===dexId);
+  if(owned.length<=1) return;
+  // remove the weakest (lowest atk)
+  const sorted = [...owned].sort((a,b)=>a.stats.atk-b.stats.atk);
+  const idx = player.pokemon.indexOf(sorted[0]);
+  player.pokemon.splice(idx,1);
+  const mon = POKEDEX.find(p=>p.id===dexId);
+  const val = RARITY_SELL_VALUE[mon.rarity];
+  player.diamonds += val;
+  inventory.items.find(i=>i.id==="diamonds").amount += val;
+  result(`Sold duplicate ${mon.name} for ${val} 💎`);
+  updateHUD(); renderInventory(); renderPokemonTab();
+}
+
+function refreshDexIfVisible(){
+  if(document.getElementById("pokemon").classList.contains("active")) renderPokemonTab();
+}
+
+// ── SEARCH & FILTER ───────────────────────────────────────────────────────────
+document.getElementById("dex-search").addEventListener("input", e=>{
+  dexSearch = e.target.value; renderPokemonTab();
+});
+document.getElementById("dex-filter").addEventListener("change", e=>{
+  dexFilter = e.target.value; renderPokemonTab();
+});
+
+// ── TABS ─────────────────────────────────────────────────────────────────────
+document.querySelectorAll(".tab-button").forEach(btn=>{
+  btn.addEventListener("click",()=>{
+    document.querySelectorAll(".tab-button").forEach(b=>b.classList.remove("active"));
+    btn.classList.add("active");
+    const tab=btn.dataset.tab;
+    document.querySelectorAll(".tab-content").forEach(c=>c.classList.remove("active"));
+    document.getElementById(tab).classList.add("active");
+    if(tab==="pokemon") renderPokemonTab();
+  });
+});
+
+// ── LAUNCH ───────────────────────────────────────────────────────────────────
+grantWeeklyHammers();
+createEggs();
+renderInventory();
+updateHUD();
+</script>
+
+<div id="storeModal"><div id="storeBox"><h2>Hammer Shop</h2>
+<div class='store-item'><span>10 Hammers</span><button onclick='buyHammers(10,100)'>100💎</button></div>
+<div class='store-item'><span>50 Hammers</span><button onclick='buyHammers(50,450)'>450💎</button></div>
+<div class='store-item'><span>100 Hammers</span><button onclick='buyHammers(100,850)'>850💎</button></div>
+<div class='store-item'><span>500 Hammers</span><button onclick='buyHammers(500,4000)'>4000💎</button></div>
+<button onclick="closeStore()">Close</button></div></div>
+
+<script>
+function openStore(){document.getElementById('storeModal').style.display='flex';}
+function closeStore(){document.getElementById('storeModal').style.display='none';}
+function buyHammers(amount, cost){
+  if(player.diamonds < cost){ result('Not enough diamonds!'); return; }
+  player.diamonds -= cost;
+  player.hammers += amount;
+  inventory.items.find(i=>i.id==="diamonds").amount = player.diamonds;
+  updateHUD();
+  renderInventory();
+  result(`Purchased ${amount} hammers for ${cost} 💎!`);
+}
+document.querySelectorAll('.top-button').forEach(b=>{ if(b.textContent.includes('Daily Top-up')) b.onclick=openStore; });
+</script></body>
+</html>
